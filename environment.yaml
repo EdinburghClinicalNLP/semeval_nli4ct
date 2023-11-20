@@ -1,0 +1,25 @@
+name: semeval_nli4ct
+channels:
+  - defaults
+  - conda-forge
+  - pyg
+dependencies:
+  - python=3.10
+  - hydra-core
+  - huggingface_hub
+  - datasets
+  - transformers
+  - evaluate
+  - pip
+  - python-dotenv
+  - wandb
+  - scikit-learn
+  - accelerate
+  - isort
+  - sentencepiece
+  - matplotlib
+  - black
+  - pydantic
+  - pandas
+  - tqdm
+  - pynvml
