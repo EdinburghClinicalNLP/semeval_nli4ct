@@ -1,0 +1,7 @@
+defaults:
+  - base_optimizer_config
+
+name: Adam
+configs:
+  lr: 1e-4
+  weight_decay: 0

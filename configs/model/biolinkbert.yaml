@@ -1,0 +1,6 @@
+defaults:
+  - base_model_config
+
+name: BioLinkBERT
+configs:
+  model_name_or_path: michiyasunaga/BioLinkBERT-base

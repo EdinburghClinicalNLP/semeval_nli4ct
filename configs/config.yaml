@@ -1,0 +1,18 @@
+defaults:
+  - base_config
+  - data: nli4ct
+  - dataloader: defaults
+  - model: clinical_llama
+  - optimizer: adamw
+  - lr_scheduler: warmup_linear_decay
+  - experiment: null
+  - _self_
+  
+hydra:
+  output_subdir: null
+random_seed: 1234
+
+wandb_project: NLI4CT
+wandb_entity: aryopg
+
+debug: true
