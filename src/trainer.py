@@ -5,10 +5,11 @@ import pandas as pd
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from transformers import AutoModelForCausalLM
+from torch.utils.data import DataLoader
+from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
 from .configs import TrainingConfigs
-from .dataset import ClinicalTrialDataset, generate_nli_data
+from .datasets.baseline_dataset import BaselineDataset
 from .factories import get_lr_scheduler, get_optimizer
 
 
@@ -16,6 +17,7 @@ class Trainer:
     def __init__(self, configs: TrainingConfigs):
         self.configs = configs
 
+        self.tokenizer = self._load_tokenizers()
         (
             self.train_dataloader,
             self.valid_dataloader,
@@ -31,45 +33,35 @@ class Trainer:
             self._setup_run()
         self._setup_training()
 
+    def _load_tokenizers(self):
+        return AutoTokenizer.from_pretrained(
+            self.configs.model.configs["model_name_or_path"]
+        )
+
     def _load_dataset(self) -> dict:
         train_dataloader = None
         valid_dataloader = None
 
-        train_inputs, train_labels = generate_nli_data(
-            self.configs.data.data_dir,
-            self.configs.data.train_data_filename,
-            self.configs.data.claims_dir,
-        )
-
-        valid_inputs, valid_labels = generate_nli_data(
-            self.configs.data.data_dir,
-            self.configs.data.valid_data_filename,
-            self.configs.data.claims_dir,
-        )
-
-        print("train_inputs[:10]: ", train_inputs[:10])
-        print("train_labels[:10]: ", train_labels[:10])
-        exit()
-
-        # Tokenize the data.
-        tokenized_train_inputs = self.tokenizer(
-            train_inputs,
-            return_tensors="pt",
-            truncation_strategy="only_first",
-            add_special_tokens=True,
-            padding=True,
-        )
-        tokenized_valid_inputs = self.tokenizer(
-            valid_inputs,
-            return_tensors="pt",
-            truncation_strategy="only_first",
-            add_special_tokens=True,
-            padding=True,
-        )
-
         # Convert data into datasets
-        train_dataset = ClinicalTrialDataset(tokenized_train_inputs, train_labels)
-        dev_dataset = ClinicalTrialDataset(tokenized_valid_inputs, valid_labels)
+        train_dataset = BaselineDataset(self.configs.data, self.tokenizer, "train")
+        valid_dataset = BaselineDataset(self.configs.data, self.tokenizer, "valid")
+
+        data_collator = DefaultDataCollator(return_tensors="pt")
+
+        print(f"Setup Train DataLoader")
+        train_dataloader = DataLoader(
+            train_dataset,
+            shuffle=True,
+            collate_fn=data_collator,
+            **self.configs.dataloader,
+        )
+        print(f"Setup Valid DataLoader")
+        valid_dataloader = DataLoader(
+            valid_dataset,
+            shuffle=True,
+            collate_fn=data_collator,
+            **self.configs.dataloader,
+        )
 
         return train_dataloader, valid_dataloader
 

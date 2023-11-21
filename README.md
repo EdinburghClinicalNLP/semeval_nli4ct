@@ -8,6 +8,10 @@ SemEval 2024 Task 2: Safe Biomedical Natural Language Inference for Clinical Tri
 - [Dataset paper](https://arxiv.org/abs/2305.03598)
 - [Task Github Repo](https://github.com/ai-systems/Task-2-SemEval-2024/tree/main)
 
+## TODO
+
+- Setup Language Modelling-based data loader
+- Try zero shot performance with LLaMA2-7b-chat and Mistral-7b
 
 ## TL;DR
 

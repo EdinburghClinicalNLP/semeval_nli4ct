@@ -1,7 +1,8 @@
 defaults:
   - base_dataloader_config
 
+dataset_loader: BaselineDataset
 batch_size: 16
 num_workers: 8
-drop_last: true
+drop_last: false
 pin_memory: false
