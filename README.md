@@ -38,7 +38,7 @@ CTRs can be categorised into 4 sections:
 
 ## TODO
 
-- Setup Language Modelling-based data loader
+- [X] Setup Language Modelling-based data loader
 - Try zero shot performance with LLaMA2-7b-chat and Mistral-7b
 
 ## EDA
@@ -52,3 +52,18 @@ CTRs can be categorised into 4 sections:
   - Validation
     
     ![Validation sequence length distribution](docs/valid_seq_len_naive_concat.png)
+
+## How to run
+
+Setup the environment:
+
+```
+conda env create -f environment.yml
+conda activate clinical_peft
+```
+
+Run experiments:
+
+```bash
+python scripts/train.py experiment=llama2_7b_zeroshot
+```
