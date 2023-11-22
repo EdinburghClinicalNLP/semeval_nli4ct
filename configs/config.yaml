@@ -1,6 +1,6 @@
 defaults:
   - base_config
-  - data: nli4ct
+  - data: nli4ct_practice
   - dataloader: baseline
   - model: clinical_llama
   - optimizer: adamw

@@ -36,11 +36,6 @@ CTRs can be categorised into 4 sections:
 - Semantics - LLMs struggle with complex reasoning tasks when applied to longer premise-hypothesis pairs. We also intervene on the statements to exploit this.
 - Notes - The specific type of intervention performed on a statement will not be available at test or training time.
 
-## TODO
-
-- [X] Setup Language Modelling-based data loader
-- Try zero shot performance with LLaMA2-7b-chat and Mistral-7b
-
 ## EDA
 
 ### Sequence Length

@@ -1,12 +1,12 @@
 # @package _global_
 defaults:
   - override /model: llama2_7b
-  - override /data: nli4ct
+  - override /data: nli4ct_practice
   - override /dataloader: language_modelling
   - override /lr_scheduler: warmup_linear_decay
   - override /optimizer: adamw
 
 
 trainer:
-  epochs: 20
+  epochs: 0
   gradient_accumulation_steps: 64

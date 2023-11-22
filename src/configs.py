@@ -10,6 +10,7 @@ class DataConfigs:
     data_dir: str = MISSING
     train_data_filename: str = MISSING
     valid_data_filename: str = MISSING
+    test_data_filename: str = MISSING
     claims_dir: str = MISSING
     max_length: int = MISSING
 
@@ -42,6 +43,12 @@ class ModelConfigs:
 class OptimizerConfigs:
     name: str = MISSING
     configs: dict = MISSING
+
+
+@dataclass
+class WandBConfigs:
+    entity: str = MISSING
+    project: str = MISSING
 
 
 @dataclass
