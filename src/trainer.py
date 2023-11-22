@@ -4,13 +4,14 @@ import os
 import pandas as pd
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
+from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
-from .configs import TrainingConfigs
-from .datasets.baseline_dataset import BaselineDataset
-from .factories import get_lr_scheduler, get_optimizer
+from src.configs import TrainingConfigs
+from src.datasets.baseline_dataset import BaselineDataset
+from src.factories import get_dataset, get_lr_scheduler, get_optimizer
 
 
 class Trainer:
@@ -21,7 +22,6 @@ class Trainer:
         (
             self.train_dataloader,
             self.valid_dataloader,
-            self.test_dataloader,
         ) = self._load_dataset()
 
         self.accelerator = Accelerator(
@@ -34,17 +34,30 @@ class Trainer:
         self._setup_training()
 
     def _load_tokenizers(self):
-        return AutoTokenizer.from_pretrained(
+        tokenizer = AutoTokenizer.from_pretrained(
             self.configs.model.configs["model_name_or_path"]
         )
+
+        if (
+            getattr(tokenizer, "pad_token_id") is None
+            or getattr(tokenizer, "pad_token") is None
+        ):
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+
+        return tokenizer
 
     def _load_dataset(self) -> dict:
         train_dataloader = None
         valid_dataloader = None
 
         # Convert data into datasets
-        train_dataset = BaselineDataset(self.configs.data, self.tokenizer, "train")
-        valid_dataset = BaselineDataset(self.configs.data, self.tokenizer, "valid")
+        train_dataset = get_dataset(self.configs.dataloader)(
+            self.configs.data, self.tokenizer, "train"
+        )
+        valid_dataset = get_dataset(self.configs.dataloader)(
+            self.configs.data, self.tokenizer, "valid"
+        )
 
         data_collator = DefaultDataCollator(return_tensors="pt")
 
@@ -53,14 +66,14 @@ class Trainer:
             train_dataset,
             shuffle=True,
             collate_fn=data_collator,
-            **self.configs.dataloader,
+            **self.configs.dataloader.configs,
         )
         print(f"Setup Valid DataLoader")
         valid_dataloader = DataLoader(
             valid_dataset,
             shuffle=True,
             collate_fn=data_collator,
-            **self.configs.dataloader,
+            **self.configs.dataloader.configs,
         )
 
         return train_dataloader, valid_dataloader

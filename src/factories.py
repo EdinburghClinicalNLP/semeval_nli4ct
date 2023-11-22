@@ -3,7 +3,8 @@ from typing import Optional
 import torch
 from transformers import PreTrainedModel, get_scheduler
 
-from .configs import LRSchedulerConfigs, OptimizerConfigs
+from src import datasets
+from src.configs import DataLoaderConfigs, LRSchedulerConfigs, OptimizerConfigs
 
 
 def get_optimizer(
@@ -30,3 +31,7 @@ def get_lr_scheduler(
         num_training_steps=num_training_steps,
         **lr_scheduler_config.configs,
     )
+
+
+def get_dataset(dataloader_config: DataLoaderConfigs):
+    return getattr(datasets, dataloader_config.dataset_loader)

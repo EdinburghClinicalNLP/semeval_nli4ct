@@ -8,11 +8,6 @@ SemEval 2024 Task 2: Safe Biomedical Natural Language Inference for Clinical Tri
 - [Dataset paper](https://arxiv.org/abs/2305.03598)
 - [Task Github Repo](https://github.com/ai-systems/Task-2-SemEval-2024/tree/main)
 
-## TODO
-
-- Setup Language Modelling-based data loader
-- Try zero shot performance with LLaMA2-7b-chat and Mistral-7b
-
 ## TL;DR
 
 Clinical trials are conducted to assess the effectiveness and safety of new treatments.
@@ -40,3 +35,20 @@ CTRs can be categorised into 4 sections:
 - Vocabulary and syntax - Acronyms and aliases are significantly more prevalent in clinical texts than general domain texts, and disrupt the performance of clinical NLI models. Additionally, models may experience shortcut learning, relying on syntactic patterns for inference. We target these concepts and patterns with an intervention.
 - Semantics - LLMs struggle with complex reasoning tasks when applied to longer premise-hypothesis pairs. We also intervene on the statements to exploit this.
 - Notes - The specific type of intervention performed on a statement will not be available at test or training time.
+
+## TODO
+
+- Setup Language Modelling-based data loader
+- Try zero shot performance with LLaMA2-7b-chat and Mistral-7b
+
+## EDA
+
+### Sequence Length
+
+- With naive concatenation of primary evidence (+ secondary evidence) + statement:
+  - Training
+    
+    ![Training sequence length distribution](docs/train_seq_len_naive_concat.png)
+  - Validation
+    
+    ![Validation sequence length distribution](docs/valid_seq_len_naive_concat.png)

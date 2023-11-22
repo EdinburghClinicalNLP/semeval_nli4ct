@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 from transformers import PreTrainedTokenizer
 
-from configs import DataConfigs
+from src.configs import DataConfigs
 
 
 class LanguageModellingDataset(torch.utils.data.Dataset):
@@ -26,11 +26,18 @@ class LanguageModellingDataset(torch.utils.data.Dataset):
             data_configs.claims_dir,
         )
 
+        self.inputs = [
+            "\n".join(evidence_statement_pair)
+            for evidence_statement_pair in zip(
+                self.evidence_texts, self.statement_texts
+            )
+        ]
+
         self.encodings = tokenizer(
             self.inputs,
-            return_tensors="pt",
+            # return_tensors="pt",
             add_special_tokens=True,
-            padding=True,
+            # padding=True,
         )
 
     def generate_data(

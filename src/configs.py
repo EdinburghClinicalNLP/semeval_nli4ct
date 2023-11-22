@@ -16,10 +16,8 @@ class DataConfigs:
 
 @dataclass
 class DataLoaderConfigs:
-    batch_size: int = MISSING
-    num_workers: int = MISSING
-    drop_last: bool = MISSING
-    pin_memory: bool = MISSING
+    dataset_loader: str = MISSING
+    configs: dict = MISSING
 
 
 @dataclass

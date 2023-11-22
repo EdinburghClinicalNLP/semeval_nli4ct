@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 from transformers import PreTrainedTokenizer
 
-from ..configs import DataConfigs
+from src.configs import DataConfigs
 
 
 class BaselineDataset(torch.utils.data.Dataset):
