@@ -16,12 +16,91 @@ The application of LLMs in critical domains, such as real-world clinical trials,
 
 This second iteration is intended to ground NLI4CT in interventional and causal analyses of NLI models (YU et al., 2022), enriching the original NLI4CT dataset with a novel contrast set, developed through the application of a set of interventions on the statements in the NLI4CT test set.
 
+## Solution workflow and Research Questions
+
+![Solution](docs/SemEval_NLI4CT_Solution.png)
+
+Our proposed pipeline is an LLM-based solution which leverages In-Context examples.
+
+### RQ 1: Can LLM perform well in zero-shot setting?
+
+### RQ 1.1: Which LLM perform the best in zero-shot setting?
+
+| Model      | F1 | Precision | Recall |
+| ---------- | -- | --------- | ------ |
+| LLaMA2-7b  |    |           |        |
+| Mistral-7b |    |           |        |
+
+### RQ 1.2: Is parameter update necessary?
+
+Base model is the best-performing LLM from the previous sub-RQ.
+
+| Model      | F1 | Precision | Recall |
+| ---------- | -- | --------- | ------ |
+| Zero-shot  |    |           |        |
+| LoRA       |    |           |        |
+
+### RQ 2: Can LLMs augmented with in-context examples perform better than zero-shot LLMs?
+
+#### RQ 2.1: How to choose the best in-context examples?
+
+In order to achieve the best performance, the pipeline must choose the best in-context examples for specific scenarii.
+There are some conditions/heuristics that we can leverage to narrow the search space:
+
+- Clinical trial report sections
+- Document length
+
+After the filtering, the retriever should select the best examples.
+However, there are several hurdles to consider, such as limited sequence length.
+We will experiment with several setup:
+
+- Zero-shot: No in-context examples
+- BM25: Naively take top-k examples.
+- BM25 + length penalty: Penalise document length with respect to the input length (if the input is long, longer documents should be penalised. If the input is short, longer documents get penalised less). Take top-k examples from the adjusted score, and naively include it as examples to the model.
+- Iterative BM25: Naively take 1 top example for $k$ time.
+- Iterative BM25 + length penalty: Take 1 top example for $k$ time using the BM25 + length penalty.
+
+The length penalty in BM25 + length penalty can be defined as:
+$$
+penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i}
+$$
+
+where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement.
+
+
+| Model                           | F1 | Precision | Recall |
+| ------------------------------- | -- | --------- | ------ |
+| Zero-shot                       |    |           |        |
+| BM25                            |    |           |        |
+| BM25 + length penalty           |    |           |        |
+| Iterative BM25                  |    |           |        |
+| Iterative BM25 + length penalty |    |           |        |
+
+#### RQ 2.2: Is statement sufficient as a query?
+
+Should we also use the CTR section during the retrieval?
+
+#### RQ 2.3: Is domain-adapted dense retriever necessary?
+
+We noticed several statements which require a degree of biomedical knowledge to understand concept synonyms.
+Sparse retrievers may not work well for these instances.
+Hence, experiments with dense retriever is necessary.
+
+| Model                           | F1 | Precision | Recall |
+| ------------------------------- | -- | --------- | ------ |
+| Zero-shot                       |    |           |        |
+| BM25                            |    |           |        |
+| PubMedBERT (Dense)              |    |           |        |
+| BioLinkBERT (Dense)             |    |           |        |
+
+## Task Description
+
 ## Research Aims
 
 - "To investigate the consistency of NLI models in their representation of semantic phenomena necessary for complex inference in clinical NLI settings"
 - "To investigate the ability of clinical NLI models to perform faithful reasoning, i.e., make correct predictions for the correct reasons."
 
-## Task Overview: Textual Entailment
+## Textual Entailment
 
 CTRs can be categorised into 4 sections:
 - Eligibility criteria - A set of conditions for patients to be allowed to take part in the clinical trial
