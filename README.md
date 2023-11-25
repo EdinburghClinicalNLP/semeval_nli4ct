@@ -26,10 +26,15 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 
 ### RQ 1.1: Which LLM perform the best in zero-shot setting?
 
+Challenges to solve:
+- How to force the model to output a minimal response to the query? The model tends to give very long answers
+  - Explore system message
+
 | Model      | F1 | Precision | Recall |
 | ---------- | -- | --------- | ------ |
 | LLaMA2-7b  |    |           |        |
 | Mistral-7b |    |           |        |
+| GPT-4 |    |           |        |
 
 ### RQ 1.2: Is parameter update necessary?
 
