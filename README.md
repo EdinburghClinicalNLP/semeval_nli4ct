@@ -34,15 +34,17 @@ Challenges to solve:
 | ---------- | -- | --------- | ------ |
 | LLaMA2-7b  |    |           |        |
 | Mistral-7b |    |           |        |
-| GPT-4 |    |           |        |
+| GPT-4      |    |           |        |
 
-### RQ 1.2: Is parameter update necessary?
+### RQ 1.2: Is a parameter fine-tuning necessary?
 
-Base model is the best-performing LLM from the previous sub-RQ.
+Note: Base model is the best-performing LLM from the previous sub-RQ.
 
 | Model      | F1 | Precision | Recall |
 | ---------- | -- | --------- | ------ |
 | Zero-shot  |    |           |        |
+| 1-shot     |    |           |        |
+| 2-shot     |    |           |        |
 | LoRA       |    |           |        |
 
 ### RQ 2: Can LLMs augmented with in-context examples perform better than zero-shot LLMs?
