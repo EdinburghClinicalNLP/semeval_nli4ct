@@ -18,7 +18,7 @@ RUN conda init
 ENV PATH /home/miniconda3/bin:$PATH
 RUN conda install python=3.10 -y
 RUN conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
-RUN conda install pip sentencepiece pydantic python-dotenv black isort tqdm wandb pandas matplotlib accelerate scikit-learn pytdc pynvml -c conda-forge -y
+RUN conda install pip sentencepiece pydantic python-dotenv black isort tqdm wandb pandas matplotlib accelerate scikit-learn hydra-core pynvml -c conda-forge -y
 RUN conda install transformers datasets huggingface_hub evaluate -c huggingface -y
 RUN rm -rf /home/miniconda3/pkgs/*
 RUN PYTHONDONTWRITEBYTECODE=1
@@ -27,3 +27,4 @@ RUN pip install peft
 RUN pip install -U pydantic==1.10.12
 RUN pip install -U transformers
 RUN pip install -U tokenizers
+RUN pip install bitsandbytes

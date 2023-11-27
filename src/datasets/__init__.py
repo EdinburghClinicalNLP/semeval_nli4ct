@@ -1,2 +1,3 @@
 from .baseline_dataset import BaselineDataset
 from .language_modelling_dataset import LanguageModellingDataset
+from .chat_dataset import ChatDataset

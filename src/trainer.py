@@ -11,7 +11,6 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
 from src.configs import TrainingConfigs
-from src.datasets.baseline_dataset import BaselineDataset
 from src.factories import get_dataset, get_lr_scheduler, get_optimizer
 from src.models import ChatModelPipeline, LanguageModelPipeline
 
@@ -20,17 +19,17 @@ class Trainer:
     def __init__(self, configs: TrainingConfigs):
         self.configs = configs
 
-        self.pipeline = LanguageModelPipeline(self.configs.model)
+        self.pipeline = ChatModelPipeline(self.configs.model)
         self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(
-            gradient_accumulation_steps=self.configs.experiment.gradient_accumulation_steps,
+            gradient_accumulation_steps=self.configs.trainer.gradient_accumulation_steps,
             log_with="wandb",
         )
 
         if not configs.debug:
             self._setup_run()
-        self._setup_training()
+        # self._setup_training()
 
     def _load_dataset(self) -> dict:
         dataloaders = {}
@@ -45,7 +44,6 @@ class Trainer:
             dataloaders[split] = DataLoader(
                 dataset,
                 shuffle=True,
-                collate_fn=data_collator,
                 **self.configs.dataloader.configs,
             )
 
@@ -120,11 +118,12 @@ class Trainer:
         return {"accuracy": acc, "precision": prec, "recall": recall, "f1": f1}
 
     def train(self):
-        for epoch in range(self.configs.training_configs.epochs):
+        for epoch in range(self.configs.trainer.epochs):
             self.pipeline.model.train()
             break
 
     def test(self, split: str):
+        print(f"Test on {split}")
         total_loss = 0
         all_labels = []
         all_predictions = []
@@ -132,8 +131,6 @@ class Trainer:
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
             prediction = self.pipeline.generate(batch)
-            print(prediction)
-            break
 
         metrics = None
 

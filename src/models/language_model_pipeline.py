@@ -11,13 +11,13 @@ class LanguageModelPipeline:
     def __init__(self, model_configs: ModelConfigs):
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_configs.model_name_or_path,
+            model_configs.configs.model_name_or_path,
         )
         self.tokenizer = self._load_tokenizer()
 
     def _load_tokenizer(self):
         tokenizer = AutoTokenizer.from_pretrained(
-            self.configs.model.configs["model_name_or_path"]
+            self.model_configs.configs.model_name_or_path
         )
 
         if (
