@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
+import wandb
 from src.configs import TrainingConfigs
 from src.factories import get_dataset, get_lr_scheduler, get_optimizer
 from src.models import ChatModelPipeline, LanguageModelPipeline
@@ -35,11 +36,10 @@ class Trainer:
         dataloaders = {}
 
         # Convert data into datasets
-        data_collator = DefaultDataCollator(return_tensors="pt")
         for split in ["train", "valid", "test"]:
             print(f"Setup {split} data loader")
             dataset = get_dataset(self.configs.dataloader)(
-                self.configs.data, self.pipeline.tokenizer, split
+                self.configs.data, tokenizer=self.pipeline.tokenizer, split=split
             )
             dataloaders[split] = DataLoader(
                 dataset,
@@ -109,7 +109,8 @@ class Trainer:
     #         self.lr_scheduler,
     #     )
 
-    def compute_metrics(self, labels, predictions):
+    @staticmethod
+    def compute_metrics(labels, predictions):
         f1 = f1_score(labels, predictions, average="weighted")
         acc = accuracy_score(labels, predictions)
         prec = precision_score(labels, predictions)
@@ -124,14 +125,51 @@ class Trainer:
 
     def test(self, split: str):
         print(f"Test on {split}")
-        total_loss = 0
-        all_labels = []
-        all_predictions = []
+        predictions_dict = {
+            "id": [],
+            "section": [],
+            "type": [],
+            "labels": [],
+            "predictions": [],
+        }
 
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
             prediction = self.pipeline.generate(batch)
+            postprocess_prediction = self.pipeline.postprocess_prediction(prediction)
 
-        metrics = None
+            predictions_dict["id"] += batch["id"]
+            predictions_dict["section"] += batch["section"]
+            predictions_dict["type"] += batch["type"]
+            predictions_dict["text"] += batch["text"]
+            predictions_dict["labels"] += batch["labels"]
+            predictions_dict["predictions"] += [postprocess_prediction]
+
+        # Convert predictions to pd.DataFrame
+        predictions_df = pd.DataFrame.from_dict(predictions_dict)
+
+        # Map labels and predictions to int labels for evaluation
+        # 1 = entailment, 0 = contradiction
+        mapped_labels = []
+        mapped_predictions = []
+        for label, prediction in zip(
+            predictions_dict["labels"], predictions_dict["predictions"]
+        ):
+            if label.lower() == "entailment":
+                mapped_labels += [1]
+            elif label.lower() == "contradiction":
+                mapped_labels += [0]
+
+            if prediction.lower() == "entailment":
+                mapped_predictions += [1]
+            elif prediction.lower() == "contradiction":
+                mapped_predictions += [0]
+            else:
+                mapped_predictions += [None]
+
+        metrics = self.compute_metrics(mapped_labels, mapped_predictions)
+
+        # Save DataFrame
+        wandb.log(metrics | {"prediction_df": wandb.Table(dataframe=predictions_df)})
 
         return metrics

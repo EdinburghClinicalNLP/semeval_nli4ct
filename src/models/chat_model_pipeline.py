@@ -17,7 +17,9 @@ class ChatModelPipeline:
             low_cpu_mem_usage=True,
             load_in_4bit=True,
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(model_configs.configs.model_name_or_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_configs.configs.model_name_or_path
+        )
 
         self.system_prompt = model_configs.configs.system_prompt
         self.system_prompt_len = len(self.tokenizer.encode(self.system_prompt))
@@ -49,10 +51,25 @@ class ChatModelPipeline:
                 max_new_tokens=max_new_tokens,
                 do_sample=True,
                 pad_token_id=self.tokenizer.eos_token_id,
-                num_return_sequences=1
+                num_return_sequences=1,
             )
             decoded_text = self.tokenizer.decode(
                 output[0, model_input.size(1) :], skip_special_tokens=True
             )
 
         return decoded_text
+
+    @staticmethod
+    def postprocess_prediction(answer):
+        """
+        If the output is structured correctly, the first word will be the answer.
+        If not, take note that it cannot be parsed correctly.
+        """
+        final_answer = answer.split()[0]
+
+        if final_answer in ["contradiction", "entailment"]:
+            # Return the first word
+            return final_answer
+        else:
+            # Return None if the string is empty
+            return None

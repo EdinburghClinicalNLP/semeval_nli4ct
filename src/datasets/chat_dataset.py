@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Tuple
+from typing import List, Tuple
 
 import pandas as pd
 import torch
@@ -10,26 +10,17 @@ from src.configs import DataConfigs
 
 
 class ChatDataset(torch.utils.data.Dataset):
-    def __init__(
-        self, data_configs: DataConfigs, tokenizer: PreTrainedTokenizer, split: str
-    ):
+    def __init__(self, data_configs: DataConfigs, split: str, **kwargs):
         data_filename = getattr(data_configs, f"{split}_data_filename")
-        self.evidence_texts, self.statement_texts, self.labels = self.generate_data(
+        self.data = self.generate_data(
             data_configs.data_dir,
             data_filename,
             data_configs.claims_dir,
         )
 
-        self.inputs = [
-            "\n".join(evidence_statement_pair)
-            for evidence_statement_pair in zip(
-                self.evidence_texts, self.statement_texts
-            )
-        ]
-
     def generate_data(
         self, data_dir: str, data_filename: str, claims_dir: str
-    ) -> Tuple[list, list]:
+    ) -> Tuple[List[str], List[str], List[str]]:
         """
         Generates data from clinical trials for Task 1: Textual entailment (NLI).
 
@@ -37,16 +28,24 @@ class ChatDataset(torch.utils.data.Dataset):
             file_path (str): Path to the JSON of the dataset.
 
         Returns:
-            joint_data: List of training instances in form of "claim [SEP] evidence_text" (str)
-            labels: List of labels, either 1 for "Entailment" or 0 for "Contradiction" (int)
+            joint_data (List[str]): List of training instances in form of:
+                "
+                    Evidence: primary trial: <primary_evidence_text> | secondary trial: <secondary_evidence_text>
+                    Statement: <statement_text>
+                    Answer:
+                "
+            labels (List[str]): List of labels, either "Entailment" or "Contradiction"
         """
 
         # Read the file.
         df = pd.read_json(os.path.join(data_dir, data_filename))
         df = df.transpose()
+        statement_id = df.index.tolist()
+        print(df)
 
         # Extract claims and labels.
         claims = df.Statement.tolist()
+
         labels = df.Label.tolist()
 
         # (Prepare to) Extract all evidence sentences from clinical trials
@@ -85,13 +84,23 @@ class ChatDataset(torch.utils.data.Dataset):
             prompted_statement = f"Statement: {statement}\nAnswer:"
             statement_texts.append(prompted_statement)
 
-        return evidence_texts, statement_texts, labels
+        return {
+            "id": statement_id,
+            "section": sections,
+            "type": types,
+            "evidence": evidence_texts,
+            "statement": statement_texts,
+            "labels": labels,
+        }
 
     def __getitem__(self, idx):
         return {
-            "text": self.inputs[idx],
-            "labels": self.labels[idx]
+            "id": self.data["id"][idx],
+            "section": self.data["section"][idx],
+            "type": self.data["type"][idx],
+            "text": self.data["evidence"][idx] + "\n" + self.data["statement"][idx],
+            "labels": self.data["labels"][idx],
         }
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.data["labels"])
