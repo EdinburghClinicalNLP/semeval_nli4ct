@@ -34,6 +34,7 @@ Challenges to solve:
 | ---------- | -- | --------- | ------ |
 | LLaMA2-7b  |    |           |        |
 | Mistral-7b |    |           |        |
+| MistralLite-7b |    |           |        |
 | GPT-4      |    |           |        |
 
 ### RQ 1.2: Is a parameter fine-tuning necessary?
@@ -72,7 +73,7 @@ $$
 penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i}
 $$
 
-where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement.
+where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
 
 
 | Model                           | F1 | Precision | Recall |
