@@ -29,7 +29,7 @@ class LanguageModelPipeline:
 
         return tokenizer
 
-    def predict(
+    def generate(
         self,
         inputs,
         max_gen_len: int,

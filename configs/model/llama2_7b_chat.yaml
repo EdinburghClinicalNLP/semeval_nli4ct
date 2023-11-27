@@ -1,0 +1,12 @@
+defaults:
+  - base_model_config
+
+name: LLaMA2-7b
+configs:
+  model_name_or_path: meta-llama/Llama-2-7b-chat-hf
+  max_seq_len: 4096
+  system_prompt: You are a clinician who detects contradictions and entailments between a section of a clinical trial report and a statement. Only answer from these options:"contradiction" and "entailment".
+  temperature: 0
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1

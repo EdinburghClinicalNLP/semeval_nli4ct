@@ -1,10 +1,8 @@
 # @package _global_
 defaults:
-  - override /model: llama2_7b
+  - override /model: llama2_7b_chat
   - override /data: nli4ct_practice
   - override /dataloader: language_modelling
-  - override /lr_scheduler: warmup_linear_decay
-  - override /optimizer: adamw
 
 
 trainer:

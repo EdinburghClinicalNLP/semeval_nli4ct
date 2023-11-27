@@ -13,7 +13,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollato
 from src.configs import TrainingConfigs
 from src.datasets.baseline_dataset import BaselineDataset
 from src.factories import get_dataset, get_lr_scheduler, get_optimizer
-from src.models import LanguageModelPipeline
+from src.models import ChatModelPipeline, LanguageModelPipeline
 
 
 class Trainer:
@@ -21,10 +21,7 @@ class Trainer:
         self.configs = configs
 
         self.pipeline = LanguageModelPipeline(self.configs.model)
-        (
-            self.train_dataloader,
-            self.valid_dataloader,
-        ) = self._load_dataset()
+        self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(
             gradient_accumulation_steps=self.configs.experiment.gradient_accumulation_steps,
@@ -36,35 +33,23 @@ class Trainer:
         self._setup_training()
 
     def _load_dataset(self) -> dict:
-        train_dataloader = None
-        valid_dataloader = None
+        dataloaders = {}
 
         # Convert data into datasets
-        train_dataset = get_dataset(self.configs.dataloader)(
-            self.configs.data, self.pipeline.tokenizer, "train"
-        )
-        valid_dataset = get_dataset(self.configs.dataloader)(
-            self.configs.data, self.pipeline.tokenizer, "valid"
-        )
-
         data_collator = DefaultDataCollator(return_tensors="pt")
+        for split in ["train", "valid", "test"]:
+            print(f"Setup {split} data loader")
+            dataset = get_dataset(self.configs.dataloader)(
+                self.configs.data, self.pipeline.tokenizer, split
+            )
+            dataloaders[split] = DataLoader(
+                dataset,
+                shuffle=True,
+                collate_fn=data_collator,
+                **self.configs.dataloader.configs,
+            )
 
-        print(f"Setup Train DataLoader")
-        train_dataloader = DataLoader(
-            train_dataset,
-            shuffle=True,
-            collate_fn=data_collator,
-            **self.configs.dataloader.configs,
-        )
-        print(f"Setup Valid DataLoader")
-        valid_dataloader = DataLoader(
-            valid_dataset,
-            shuffle=True,
-            collate_fn=data_collator,
-            **self.configs.dataloader.configs,
-        )
-
-        return train_dataloader, valid_dataloader
+        return dataloaders
 
     def _setup_run(self):
         ## Set group name
@@ -140,20 +125,15 @@ class Trainer:
             break
 
     def test(self, split: str):
-        if split == "train":
-            dataloader = self.train_dataloader
-        elif split == "valid":
-            dataloader = self.valid_dataloader
-        elif split == "test":
-            dataloader = self.test_dataloader
-
         total_loss = 0
         all_labels = []
         all_predictions = []
 
         self.pipeline.model.eval()
-        for step, batch in enumerate(tqdm(dataloader)):
-            prediction = self.pipeline.predict(batch, max_gen_len=128)
+        for step, batch in enumerate(tqdm(self.dataloaders[split])):
+            prediction = self.pipeline.generate(batch)
+            print(prediction)
+            break
 
         metrics = None
 
