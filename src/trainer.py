@@ -141,7 +141,6 @@ class Trainer:
             predictions_dict["id"] += batch["id"]
             predictions_dict["section"] += batch["section"]
             predictions_dict["type"] += batch["type"]
-            predictions_dict["text"] += batch["text"]
             predictions_dict["labels"] += batch["labels"]
             predictions_dict["predictions"] += [postprocess_prediction]
 
