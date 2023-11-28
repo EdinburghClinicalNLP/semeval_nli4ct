@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 
+import re
 import torch
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
@@ -69,7 +70,7 @@ class ChatModelPipeline:
         If the output is structured correctly, the first word will be the answer.
         If not, take note that it cannot be parsed correctly.
         """
-        final_answer = answer.split()[0].strip()
+        final_answer = re.split('[\.\s\:\n]+', answer.lower().strip())[0].strip()
 
         if final_answer in ["contradiction", "entailment"]:
             # Return the first word
