@@ -19,7 +19,6 @@ from src.utils import common_utils
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(configs: TrainingConfigs) -> None:
-    print(configs)
     missing_keys: set[str] = OmegaConf.missing_keys(configs)
     if missing_keys:
         raise RuntimeError(f"Got missing keys in config:\n{missing_keys}")
