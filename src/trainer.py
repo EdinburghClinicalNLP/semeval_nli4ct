@@ -130,7 +130,7 @@ class Trainer:
     def test(self, split: str):
         print(f"Test on {split}")
 
-        predictions_df = pd.DataFrame(columns=["id", "section", "type", "text", "input_length", "max_new_tokens", "labels", "predictions"])
+        predictions_df = pd.DataFrame(columns=["id", "section", "type", "text", "input_length", "max_new_tokens", "labels", "predictions", "original_predictions"])
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
             prediction = self.pipeline.generate(batch)
@@ -145,6 +145,7 @@ class Trainer:
                 "max_new_tokens": prediction["max_new_tokens"],
                 "labels": batch["labels"],
                 "predictions": [postprocess_prediction],
+                "original_predictions": [prediction["decoded_text"]]
             })
 
             # Append the batch DataFrame to the overall predictions DataFrame
