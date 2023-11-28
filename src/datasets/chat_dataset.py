@@ -50,8 +50,8 @@ class ChatDataset(torch.utils.data.Dataset):
         # (Prepare to) Extract all evidence sentences from clinical trials
         evidence_texts = list()
         statement_texts = list()
-        primary_cts, secondary_cts = df.Primary_id, df.Secondary_id
-        sections, types = df.Section_id, df.Type
+        primary_cts, secondary_cts = df.Primary_id.tolist(), df.Secondary_id.tolist()
+        sections, types = df.Section_id.tolist(), df.Type.tolist()
 
         # Generate evidence texts for each claim.
         claims_dir = os.path.join(data_dir, claims_dir)
