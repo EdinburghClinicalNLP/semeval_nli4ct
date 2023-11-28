@@ -41,7 +41,6 @@ class ChatDataset(torch.utils.data.Dataset):
         df = pd.read_json(os.path.join(data_dir, data_filename))
         df = df.transpose()
         statement_id = df.index.tolist()
-        print(df)
 
         # Extract claims and labels.
         claims = df.Statement.tolist()
@@ -81,7 +80,7 @@ class ChatDataset(torch.utils.data.Dataset):
 
             evidence_texts.append(evidence)
 
-            prompted_statement = f"Statement: {statement}\nAnswer:"
+            prompted_statement = f"Statement: {statement}\nAnswer: "
             statement_texts.append(prompted_statement)
 
         return {
