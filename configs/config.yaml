@@ -7,7 +7,7 @@ defaults:
   - lr_scheduler: warmup_linear_decay
   - experiment: null
   - _self_
-  
+
 hydra:
   output_subdir: null
 random_seed: 1234
