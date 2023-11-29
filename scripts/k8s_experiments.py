@@ -20,7 +20,7 @@ def main():
     args = argument_parser()
     configs = yaml.safe_load(open(args.run_configs_filepath, "r"))
 
-    base_args = "pip install -U transformers && pip install -U tokenizers && pip install bitsandbytes && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git && cd semeval_nli4ct && git clone https://huggingface.co/datasets/aryopg/nli4ct_practice data && "
+    base_args = "pip install -U transformers && pip install -U tokenizers && pip install bitsandbytes && pip install hydra-core && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git && cd semeval_nli4ct && git clone https://huggingface.co/datasets/aryopg/nli4ct_practice data && "
     base_command = "python scripts/train.py experiment="
 
     secret_env_vars = configs["env_vars"]
