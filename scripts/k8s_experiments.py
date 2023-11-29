@@ -27,7 +27,7 @@ def main():
     commands = {}
     for config in configs["configs"]:
         command = base_command + config
-        commands[config] = command
+        commands[config.replace("_", "-")] = command
 
     for run_name, command in commands.items():
         # Create a Kubernetes Job with a name, container image, and command
