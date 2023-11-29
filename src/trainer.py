@@ -129,12 +129,26 @@ class Trainer:
     def test(self, split: str):
         print(f"Test on {split}")
 
-        predictions_df = pd.DataFrame(columns=["id", "section", "type", "text", "input_length", "max_new_tokens", "labels", "predictions", "original_predictions"])
+        predictions_df = pd.DataFrame(
+            columns=[
+                "id",
+                "section",
+                "type",
+                "text",
+                "input_length",
+                "max_new_tokens",
+                "labels",
+                "predictions",
+                "original_predictions",
+            ]
+        )
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
             try:
                 prediction = self.pipeline.generate(batch)
-                postprocess_prediction = self.pipeline.postprocess_prediction(prediction["decoded_text"])
+                postprocess_prediction = self.pipeline.postprocess_prediction(
+                    prediction["decoded_text"]
+                )
             except:
                 print(f"Failed to predict: {batch}")
                 prediction = {
@@ -144,23 +158,27 @@ class Trainer:
                 }
                 postprocess_prediction = None
 
-            batch_df = pd.DataFrame({
-                "id": batch["id"],
-                "section": batch["section"],
-                "type": batch["type"],
-                "text": batch["text"],
-                "input_length": [prediction["input_length"]],
-                "max_new_tokens": [prediction["max_new_tokens"]],
-                "labels": [label.lower() for label in batch["labels"]],
-                "predictions": [postprocess_prediction],
-                "original_predictions": [prediction["decoded_text"]]
-            })
+            batch_df = pd.DataFrame(
+                {
+                    "id": batch["id"],
+                    "section": batch["section"],
+                    "type": batch["type"],
+                    "text": batch["text"],
+                    "input_length": [prediction["input_length"]],
+                    "max_new_tokens": [prediction["max_new_tokens"]],
+                    "labels": [label.lower() for label in batch["labels"]],
+                    "predictions": [postprocess_prediction],
+                    "original_predictions": [prediction["decoded_text"]],
+                }
+            )
 
             # Append the batch DataFrame to the overall predictions DataFrame
             predictions_df = pd.concat([predictions_df, batch_df], ignore_index=True)
 
             # Save the updated DataFrame to a CSV file after each batch
-            predictions_df.to_csv(os.path.join(self.output_dir, f"predictions_{split}.csv"), index=False)
+            predictions_df.to_csv(
+                os.path.join(self.output_dir, f"predictions_{split}.csv"), index=False
+            )
 
         # Map labels and predictions to int labels for evaluation
         # 1 = entailment, 0 = contradiction
@@ -188,6 +206,10 @@ class Trainer:
                 mapped_predictions += [mapped_prediction]
 
         metrics = self.compute_metrics(mapped_labels, mapped_predictions)
+        metrics = {
+            f"{split}/{metric_name}": metric_value
+            for metric_name, metric_value in metrics.items()
+        }
         print(metrics)
 
         # Save DataFrame
