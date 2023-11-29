@@ -39,7 +39,7 @@ class ChatModelPipeline:
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
-        ).to(self.model.device())
+        ).to(self.model.device)
         max_new_tokens = self.max_seq_len - self.system_prompt_len - model_input.size(1)
 
         with torch.inference_mode():
