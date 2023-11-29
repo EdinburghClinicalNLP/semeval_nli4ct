@@ -4,7 +4,7 @@ defaults:
   - override /data: nli4ct_practice
   - override /dataloader: chat
 
-
 trainer:
+  experiment_name: llama2_7b_chat_zeroshot
   epochs: 0
-  gradient_accumulation_steps: 64
+  gradient_accumulation_steps: 0

@@ -1,7 +1,7 @@
 defaults:
   - base_model_config
 
-name: LLaMA2-7b
+name: LLaMA2-7b-chat
 configs:
   model_name_or_path: meta-llama/Llama-2-7b-chat-hf
   max_seq_len: 4096
