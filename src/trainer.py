@@ -152,20 +152,20 @@ class Trainer:
                     label.lower() if label is not None else None
                     for label in batch["labels"]
                 ]
-            # try:
-            prediction = self.pipeline.generate(batch)
-            postprocessed_prediction = self.pipeline.postprocess_prediction(
-                prediction["decoded_text"]
-            )
-            # except Exception as exc:
-            #     print(f"Failed to predict: {batch}")
-            #     print(f"Exception: {exc}")
-            #     prediction = {
-            #         "input_length": None,
-            #         "max_new_tokens": None,
-            #         "decoded_text": None,
-            #     }
-            #     postprocessed_prediction = None
+            try:
+                prediction = self.pipeline.generate(batch)
+                postprocessed_prediction = self.pipeline.postprocess_prediction(
+                    prediction["decoded_text"]
+                )
+            except Exception as exc:
+                print(f"Failed to predict: {batch}")
+                print(f"Exception: {exc}")
+                prediction = {
+                    "input_length": None,
+                    "max_new_tokens": None,
+                    "decoded_text": None,
+                }
+                postprocessed_prediction = None
 
             batch_df = pd.DataFrame(
                 {
