@@ -15,4 +15,4 @@ random_seed: 1234
 wandb_project: NLI4CT
 wandb_entity: aryopg
 
-debug: true
+debug: false
