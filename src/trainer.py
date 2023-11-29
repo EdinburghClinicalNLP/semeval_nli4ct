@@ -152,19 +152,20 @@ class Trainer:
                     label.lower() if label is not None else None
                     for label in batch["labels"]
                 ]
-            try:
-                prediction = self.pipeline.generate(batch)
-                postprocessed_prediction = self.pipeline.postprocess_prediction(
-                    prediction["decoded_text"]
-                )
-            except:
-                print(f"Failed to predict: {batch}")
-                prediction = {
-                    "input_length": None,
-                    "max_new_tokens": None,
-                    "decoded_text": None,
-                }
-                postprocessed_prediction = None
+            # try:
+            prediction = self.pipeline.generate(batch)
+            postprocessed_prediction = self.pipeline.postprocess_prediction(
+                prediction["decoded_text"]
+            )
+            # except Exception as exc:
+            #     print(f"Failed to predict: {batch}")
+            #     print(f"Exception: {exc}")
+            #     prediction = {
+            #         "input_length": None,
+            #         "max_new_tokens": None,
+            #         "decoded_text": None,
+            #     }
+            #     postprocessed_prediction = None
 
             batch_df = pd.DataFrame(
                 {
@@ -188,37 +189,40 @@ class Trainer:
                 os.path.join(self.output_dir, f"predictions_{split}.csv"), index=False
             )
 
-        # Map labels and predictions to int labels for evaluation
-        # 1 = entailment, 0 = contradiction
-        mapped_labels = []
-        mapped_predictions = []
-        for label, prediction in predictions_df[["labels", "predictions"]].values:
-            if label.lower() == "entailment":
-                mapped_label = 1
-            elif label.lower() == "contradiction":
-                mapped_label = 0
-            mapped_labels += [mapped_label]
+        if split == "test":
+            metrics = {}
+        else:
+            # Map labels and predictions to int labels for evaluation
+            # 1 = entailment, 0 = contradiction
+            mapped_labels = []
+            mapped_predictions = []
+            for label, prediction in predictions_df[["labels", "predictions"]].values:
+                if label.lower() == "entailment":
+                    mapped_label = 1
+                elif label.lower() == "contradiction":
+                    mapped_label = 0
+                mapped_labels += [mapped_label]
 
-            if prediction is not None:
-                if prediction.lower() == "entailment":
-                    mapped_predictions += [1]
-                elif prediction.lower() == "contradiction":
-                    mapped_predictions += [0]
+                if prediction is not None:
+                    if prediction.lower() == "entailment":
+                        mapped_predictions += [1]
+                    elif prediction.lower() == "contradiction":
+                        mapped_predictions += [0]
+                    else:
+                        # Intentionally assign incorrect prediction just to bypass evaluation
+                        mapped_prediction = 0 if mapped_label == 1 else 1
+                        mapped_predictions += [mapped_prediction]
                 else:
                     # Intentionally assign incorrect prediction just to bypass evaluation
                     mapped_prediction = 0 if mapped_label == 1 else 1
                     mapped_predictions += [mapped_prediction]
-            else:
-                # Intentionally assign incorrect prediction just to bypass evaluation
-                mapped_prediction = 0 if mapped_label == 1 else 1
-                mapped_predictions += [mapped_prediction]
 
-        metrics = self.compute_metrics(mapped_labels, mapped_predictions)
-        metrics = {
-            f"{split}/{metric_name}": metric_value
-            for metric_name, metric_value in metrics.items()
-        }
-        print(metrics)
+            metrics = self.compute_metrics(mapped_labels, mapped_predictions)
+            metrics = {
+                f"{split}/{metric_name}": metric_value
+                for metric_name, metric_value in metrics.items()
+            }
+            print(metrics)
 
         # Save DataFrame
         wandb.log(
