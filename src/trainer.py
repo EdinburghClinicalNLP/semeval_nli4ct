@@ -144,9 +144,17 @@ class Trainer:
         )
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
+            # Test split doesn't have labels
+            if split == "test":
+                postprocessed_label = [None] * len(batch["labels"])
+            else:
+                postprocessed_label = [
+                    label.lower() if label is not None else None
+                    for label in batch["labels"]
+                ]
             try:
                 prediction = self.pipeline.generate(batch)
-                postprocess_prediction = self.pipeline.postprocess_prediction(
+                postprocessed_prediction = self.pipeline.postprocess_prediction(
                     prediction["decoded_text"]
                 )
             except:
@@ -156,7 +164,7 @@ class Trainer:
                     "max_new_tokens": None,
                     "decoded_text": None,
                 }
-                postprocess_prediction = None
+                postprocessed_prediction = None
 
             batch_df = pd.DataFrame(
                 {
@@ -166,8 +174,8 @@ class Trainer:
                     "text": batch["text"],
                     "input_length": [prediction["input_length"]],
                     "max_new_tokens": [prediction["max_new_tokens"]],
-                    "labels": [label.lower() for label in batch["labels"]],
-                    "predictions": [postprocess_prediction],
+                    "labels": postprocessed_label,
+                    "predictions": [postprocessed_prediction],
                     "original_predictions": [prediction["decoded_text"]],
                 }
             )
@@ -213,6 +221,8 @@ class Trainer:
         print(metrics)
 
         # Save DataFrame
-        wandb.log(metrics | {"prediction_df": wandb.Table(dataframe=predictions_df)})
+        wandb.log(
+            metrics | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
+        )
 
         return metrics
