@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 
+import re
 import torch
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
@@ -57,7 +58,11 @@ class ChatModelPipeline:
                 output[0, model_input.size(1) :], skip_special_tokens=True
             )
 
-        return decoded_text
+        return {
+            "decoded_text": decoded_text,
+            "input_length": model_input.size(1),
+            "max_new_tokens": max_new_tokens
+        }
 
     @staticmethod
     def postprocess_prediction(answer):
@@ -65,11 +70,11 @@ class ChatModelPipeline:
         If the output is structured correctly, the first word will be the answer.
         If not, take note that it cannot be parsed correctly.
         """
-        final_answer = answer.split()[0]
+        final_answer = re.split('[\.\s\:\n]+', answer.lower().strip())[0].strip()
 
         if final_answer in ["contradiction", "entailment"]:
             # Return the first word
             return final_answer
         else:
-            # Return None if the string is empty
-            return None
+            # Return original answer if the string is empty
+            return answer

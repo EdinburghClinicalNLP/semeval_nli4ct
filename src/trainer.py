@@ -1,6 +1,7 @@
 import math
 import os
 
+import hydra
 import pandas as pd
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
@@ -19,6 +20,9 @@ from src.models import ChatModelPipeline, LanguageModelPipeline
 class Trainer:
     def __init__(self, configs: TrainingConfigs):
         self.configs = configs
+
+        hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+        self.output_dir = hydra_cfg["runtime"]["output_dir"]
 
         self.pipeline = ChatModelPipeline(self.configs.model)
         self.dataloaders = self._load_dataset()
@@ -124,48 +128,67 @@ class Trainer:
 
     def test(self, split: str):
         print(f"Test on {split}")
-        predictions_dict = {
-            "id": [],
-            "section": [],
-            "type": [],
-            "labels": [],
-            "predictions": [],
-        }
 
+        predictions_df = pd.DataFrame(columns=["id", "section", "type", "text", "input_length", "max_new_tokens", "labels", "predictions", "original_predictions"])
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
-            prediction = self.pipeline.generate(batch)
-            postprocess_prediction = self.pipeline.postprocess_prediction(prediction)
+            try:
+                prediction = self.pipeline.generate(batch)
+                postprocess_prediction = self.pipeline.postprocess_prediction(prediction["decoded_text"])
+            except:
+                print(f"Failed to predict: {batch}")
+                prediction = {
+                    "input_length": None,
+                    "max_new_tokens": None,
+                    "decoded_text": None,
+                }
+                postprocess_prediction = None
 
-            predictions_dict["id"] += batch["id"]
-            predictions_dict["section"] += batch["section"]
-            predictions_dict["type"] += batch["type"]
-            predictions_dict["labels"] += batch["labels"]
-            predictions_dict["predictions"] += [postprocess_prediction]
+            batch_df = pd.DataFrame({
+                "id": batch["id"],
+                "section": batch["section"],
+                "type": batch["type"],
+                "text": batch["text"],
+                "input_length": [prediction["input_length"]],
+                "max_new_tokens": [prediction["max_new_tokens"]],
+                "labels": [label.lower() for label in batch["labels"]],
+                "predictions": [postprocess_prediction],
+                "original_predictions": [prediction["decoded_text"]]
+            })
 
-        # Convert predictions to pd.DataFrame
-        predictions_df = pd.DataFrame.from_dict(predictions_dict)
+            # Append the batch DataFrame to the overall predictions DataFrame
+            predictions_df = pd.concat([predictions_df, batch_df], ignore_index=True)
+
+            # Save the updated DataFrame to a CSV file after each batch
+            predictions_df.to_csv(os.path.join(self.output_dir, f"predictions_{split}.csv"), index=False)
 
         # Map labels and predictions to int labels for evaluation
         # 1 = entailment, 0 = contradiction
         mapped_labels = []
         mapped_predictions = []
-        for label, prediction in zip(
-            predictions_dict["labels"], predictions_dict["predictions"]
-        ):
+        for label, prediction in predictions_df[["labels", "predictions"]].values:
             if label.lower() == "entailment":
-                mapped_labels += [1]
+                mapped_label = 1
             elif label.lower() == "contradiction":
-                mapped_labels += [0]
+                mapped_label = 0
+            mapped_labels += [mapped_label]
 
-            if prediction.lower() == "entailment":
-                mapped_predictions += [1]
-            elif prediction.lower() == "contradiction":
-                mapped_predictions += [0]
+            if prediction is not None:
+                if prediction.lower() == "entailment":
+                    mapped_predictions += [1]
+                elif prediction.lower() == "contradiction":
+                    mapped_predictions += [0]
+                else:
+                    # Intentionally assign incorrect prediction just to bypass evaluation
+                    mapped_prediction = 0 if mapped_label == 1 else 1
+                    mapped_predictions += [mapped_prediction]
             else:
-                mapped_predictions += [None]
+                # Intentionally assign incorrect prediction just to bypass evaluation
+                mapped_prediction = 0 if mapped_label == 1 else 1
+                mapped_predictions += [mapped_prediction]
 
         metrics = self.compute_metrics(mapped_labels, mapped_predictions)
+        print(metrics)
 
         # Save DataFrame
         wandb.log(metrics | {"prediction_df": wandb.Table(dataframe=predictions_df)})
