@@ -1,6 +1,6 @@
+import re
 from typing import List, Optional, Tuple
 
-import re
 import torch
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
@@ -39,7 +39,7 @@ class ChatModelPipeline:
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
-        )
+        ).to(self.model.device())
         max_new_tokens = self.max_seq_len - self.system_prompt_len - model_input.size(1)
 
         with torch.inference_mode():
@@ -61,7 +61,7 @@ class ChatModelPipeline:
         return {
             "decoded_text": decoded_text,
             "input_length": model_input.size(1),
-            "max_new_tokens": max_new_tokens
+            "max_new_tokens": max_new_tokens,
         }
 
     @staticmethod
@@ -70,7 +70,7 @@ class ChatModelPipeline:
         If the output is structured correctly, the first word will be the answer.
         If not, take note that it cannot be parsed correctly.
         """
-        final_answer = re.split('[\.\s\:\n]+', answer.lower().strip())[0].strip()
+        final_answer = re.split("[\.\s\:\n]+", answer.lower().strip())[0].strip()
 
         if final_answer in ["contradiction", "entailment"]:
             # Return the first word
