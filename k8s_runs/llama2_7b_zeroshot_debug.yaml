@@ -1,5 +1,5 @@
 gpu_limit: 1
-gpu_product: NVIDIA-A100-SXM4-80GB
+gpu_product: NVIDIA-A100-SXM4-40GB
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -19,4 +19,4 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 configs:
-  - llama2_7b_zeroshot
+  - llama2_7b_chat_zeroshot
