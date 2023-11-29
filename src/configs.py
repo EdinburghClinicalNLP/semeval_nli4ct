@@ -23,6 +23,7 @@ class DataLoaderConfigs:
 
 @dataclass
 class TrainerConfigs:
+    experiment_name: str = MISSING
     epochs: int = MISSING
     gradient_accumulation_steps: int = MISSING
 

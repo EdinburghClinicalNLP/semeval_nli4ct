@@ -51,11 +51,10 @@ class Trainer:
 
     def _setup_run(self):
         ## Set group name
-        self.group_name = ""
+        self.wandb_group_name = ""
 
-        # Run name depends on the hyperparameters
-        hyperparams = []
-        self.run_name = "_".join(hyperparams)
+        # TODO: This is just a shortcut for the moment. Naming should be more comprehensive
+        self.wandb_run_name = self.configs.trainer.experiment_name
 
         self.wandb_tracker = None
         if self.accelerator.is_main_process:
@@ -64,8 +63,8 @@ class Trainer:
                 init_kwargs={
                     "wandb": {
                         "entity": self.configs.wandb_entity,
-                        "name": self.run_name,
-                        "group": self.group_name,
+                        "name": self.wandb_run_name,
+                        "group": self.wandb_group_name,
                     }
                 },
             )
