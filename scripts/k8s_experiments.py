@@ -25,8 +25,8 @@ def main():
     secret_env_vars = configs["env_vars"]
     commands = {}
     for config in configs["configs"]:
-        command = base_command + config["config_filepath"]
-        commands[config["config_filepath"]] = [command]
+        command = base_command + config
+        commands[config] = [command]
 
     for run_name, command in commands.items():
         # Create a Kubernetes Job with a name, container image, and command
