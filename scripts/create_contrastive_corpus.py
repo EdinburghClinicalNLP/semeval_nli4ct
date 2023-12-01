@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from typing import List
 
 import pandas as pd
@@ -127,8 +128,10 @@ def main():
         }
 
     # Save the dictionary to a JSON file
-    data_name = args.data_path.split("/")[-1].replace(".json", "")
-    with open(f"{data_name}_synonyms.json", "w") as json_file:
+    data_paths = args.data_path.split("/")
+    data_dir = "/".join(data_paths[:-1])
+    data_name = data_paths[-1].replace(".json", "")
+    with open(os.path.join(data_dir, f"{data_name}_synonyms.json"), "w") as json_file:
         json.dump(modified_statements_dict, json_file)
 
 
