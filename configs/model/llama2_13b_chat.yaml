@@ -1,10 +1,10 @@
 defaults:
   - base_model_config
 
-name: LLaMA2-7b-chat
+name: LLaMA2-13b-chat
 pipeline: ChatModelPipeline
 configs:
-  model_name_or_path: meta-llama/Llama-2-7b-chat-hf
+  model_name_or_path: meta-llama/Llama-2-13b-chat-hf
   max_seq_len: 4096
   system_prompt: You are a clinician who detects contradictions and entailments between a section of a clinical trial report and a statement. Provide a concise one-word answer between contradiction and entailment.\n
   temperature: 0.001

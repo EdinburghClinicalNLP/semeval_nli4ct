@@ -22,9 +22,6 @@ class LanguageModelPipeline:
             model_configs.configs.model_name_or_path
         )
 
-        self.system_prompt = model_configs.configs.system_prompt
-        self.system_prompt_len = len(self.tokenizer.encode(self.system_prompt))
-
         self.max_seq_len = model_configs.configs.max_seq_len
 
     def generate(
@@ -34,11 +31,11 @@ class LanguageModelPipeline:
         model_input = self.tokenizer(
             inputs["text"][0], return_tensors="pt", max_length=self.max_seq_len
         ).to(self.model.device)
-        max_new_tokens = self.max_seq_len - self.system_prompt_len - model_input.size(1)
+        max_new_tokens = self.max_seq_len - model_input["input_ids"].size(1)
 
         with torch.inference_mode():
             output = self.model.generate(
-                model_input,
+                **model_input,
                 temperature=self.model_configs.configs.temperature,
                 top_p=self.model_configs.configs.top_p,
                 top_k=self.model_configs.configs.top_k,
@@ -49,12 +46,12 @@ class LanguageModelPipeline:
                 num_return_sequences=1,
             )
             decoded_text = self.tokenizer.decode(
-                output[0, model_input.size(1) :], skip_special_tokens=True
+                output[0, model_input["input_ids"].size(1) :], skip_special_tokens=True
             )
 
         return {
             "decoded_text": decoded_text,
-            "input_length": model_input.size(1),
+            "input_length": model_input["input_ids"].size(1),
             "max_new_tokens": max_new_tokens,
         }
 

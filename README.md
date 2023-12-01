@@ -27,29 +27,33 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 ### RQ 1.1: Which LLM perform the best in zero-shot setting?
 
 Challenges to solve:
+
 - How to force the model to output a minimal response to the query? The model tends to give very long answers
   - Explore system message
 
-| Model          | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
-| -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| LLaMA2-7b-chat | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
-| GPT-4          |  |  |  |  |  |  |  |  |
-| LLaMA2-7b      |  |  |  |  |  |  |  |  |
-| Mistral-7b     |  |  |  |  |  |  |  |  |
-| MistralLite-7b |  |  |  |  |  |  |  |  |
+| Model           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| --------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| LLaMA2-7b-chat  | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
+| LLaMA2-13b-chat |                |          |                 |              |                |          |                 |              |
+| GPT-4           |                |          |                 |              |                |          |                 |              |
+| LLaMA2-7b       |                |          |                 |              |                |          |                 |              |
+| LLaMA2-13b      |                |          |                 |              |                |          |                 |              |
+| Mistral-7b      |                |          |                 |              |                |          |                 |              |
+| Mistral-13b     |                |          |                 |              |                |          |                 |              |
+| MistralLite-7b  |                |          |                 |              |                |          |                 |              |
 
-:warning: *Note: "Train_\*" performance indicates the performance on the training split, but still in a zero-shot setup* :warning:
+:warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
 ### RQ 1.2: Is parameter fine-tuning necessary?
 
 Note: Base model is the best-performing LLM from the previous sub-RQ.
 
-| Model      | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
-| ---------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot  |  |  |  |  |  |  |  |  |
-| 1-shot     |  |  |  |  |  |  |  |  |
-| 2-shot     |  |  |  |  |  |  |  |  |
-| LoRA       |  |  |  |  |  |  |  |  |
+| Model     | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| --------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot |                |          |                 |              |                |          |                 |              |
+| 1-shot    |                |          |                 |              |                |          |                 |              |
+| 2-shot    |                |          |                 |              |                |          |                 |              |
+| LoRA      |                |          |                 |              |                |          |                 |              |
 
 ### (Bonus) RQ 1.3: Do pretrained LLMs exhibit hypothesis-only bias?
 
@@ -76,20 +80,20 @@ We will experiment with several setup:
 - Iterative BM25 + length penalty: Take 1 top example for $k$ time using the BM25 + length penalty.
 
 The length penalty in BM25 + length penalty can be defined as:
+
 $$
 penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i}
 $$
 
 where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
 
-
 | Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot                       |  |  |  |  |  |  |  |  |
-| BM25                            |  |  |  |  |  |  |  |  |
-| BM25 + length penalty           |  |  |  |  |  |  |  |  |
-| Iterative BM25                  |  |  |  |  |  |  |  |  |
-| Iterative BM25 + length penalty |  |  |  |  |  |  |  |  |
+| Zero-shot                       |                |          |                 |              |                |          |                 |              |
+| BM25                            |                |          |                 |              |                |          |                 |              |
+| BM25 + length penalty           |                |          |                 |              |                |          |                 |              |
+| Iterative BM25                  |                |          |                 |              |                |          |                 |              |
+| Iterative BM25 + length penalty |                |          |                 |              |                |          |                 |              |
 
 #### RQ 2.2: Is statement sufficient as a query?
 
@@ -101,12 +105,12 @@ We noticed several statements which require a degree of biomedical knowledge to 
 Sparse retrievers may not work well for these instances.
 Hence, experiments with dense retriever is necessary.
 
-| Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
-| ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot                       |  |  |  |  |  |  |  |  |
-| BM25                            |  |  |  |  |  |  |  |  |
-| PubMedBERT (Dense)              |  |  |  |  |  |  |  |  |
-| BioLinkBERT (Dense)             |  |  |  |  |  |  |  |  |
+| Model               | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot           |                |          |                 |              |                |          |                 |              |
+| BM25                |                |          |                 |              |                |          |                 |              |
+| PubMedBERT (Dense)  |                |          |                 |              |                |          |                 |              |
+| BioLinkBERT (Dense) |                |          |                 |              |                |          |                 |              |
 
 ### RQ 3: Can LLMs predict in a faithful and consistent manner?
 
@@ -116,24 +120,27 @@ To evaluate the consistency of the LLMs' predictions, we can try to alter the in
 We created a contrastive corpus to evaluate this.
 This contrastive corpus is created by replacing entities within the statements with their synonyms.
 We utilised `scispacy` pipeline, specifically:
+
 - NER model (`en_ner_bc5cdr_md`) to extract `CHEMICAL` and `DISEASE` entities
 - Abbreviation Detector
 - Entity linker (UMLS)
 
 We also implemented a naive postprocessing to remove synonyms that contain: `,`, `(`, and `)` which are unlikely to appear in real statements. For instance:
+
 > Original entity: `capecitabine` \
 > CUI: `C0671970` \
 > Aliases:
->   - Capecitabinum :white_check_mark:
->   - Capecitabine-containing product :white_check_mark:
->   - Capécitabine :white_check_mark:
->   - Capecitabine :white_check_mark:
->   - CAPE :white_check_mark:
->   - Capecitabin :white_check_mark:
->   - Capecitabine (substance) :x:
->   - 5'-Deoxy-5-fluoro-N-[(pentyloxy)carbonyl]-cytidine :x:
->   - pentyl 1-(5-deoxy-β-D-ribofuranosyl)-5-fluoro-1,2-dihydro-2-oxo-4-pyrimidinecarbamate :x:
->   - N(4)-pentyloxycarbonyl-5'-deoxy-5-fluorocytidine :x:
+>
+> - Capecitabinum :white_check_mark:
+> - Capecitabine-containing product :white_check_mark:
+> - Capécitabine :white_check_mark:
+> - Capecitabine :white_check_mark:
+> - CAPE :white_check_mark:
+> - Capecitabin :white_check_mark:
+> - Capecitabine (substance) :x:
+> - 5'-Deoxy-5-fluoro-N-[(pentyloxy)carbonyl]-cytidine :x:
+> - pentyl 1-(5-deoxy-β-D-ribofuranosyl)-5-fluoro-1,2-dihydro-2-oxo-4-pyrimidinecarbamate :x:
+> - N(4)-pentyloxycarbonyl-5'-deoxy-5-fluorocytidine :x:
 
 To create the corpus:
 
@@ -148,10 +155,10 @@ One potential solution to address this consistency is by fine-tuning the model i
 
 | Model                   | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ----------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot               |  |  |  |  |  |  |  |  |
-| Retrieval-augmented ICL |  |  |  |  |  |  |  |  |
-| LoRA                    |  |  |  |  |  |  |  |  |
-| Contrastive fine-tuning |  |  |  |  |  |  |  |  |
+| Zero-shot               |                |          |                 |              |                |          |                 |              |
+| Retrieval-augmented ICL |                |          |                 |              |                |          |                 |              |
+| LoRA                    |                |          |                 |              |                |          |                 |              |
+| Contrastive fine-tuning |                |          |                 |              |                |          |                 |              |
 
 ## Task Description
 
@@ -163,6 +170,7 @@ One potential solution to address this consistency is by fine-tuning the model i
 ## Textual Entailment
 
 CTRs can be categorised into 4 sections:
+
 - Eligibility criteria - A set of conditions for patients to be allowed to take part in the clinical trial
 - Intervention - Information concerning the type, dosage, frequency, and duration of treatments being studied.
 - Results - Number of participants in the trial, outcome measures, units, and the results.
@@ -181,10 +189,11 @@ CTRs can be categorised into 4 sections:
 
 - With naive concatenation of primary evidence (+ secondary evidence) + statement:
   - Training
-    
+
     ![Training sequence length distribution](docs/train_seq_len_naive_concat.png)
+
   - Validation
-    
+
     ![Validation sequence length distribution](docs/valid_seq_len_naive_concat.png)
 
 ## How to run

@@ -1,5 +1,0 @@
-defaults:
-  - base_trainer_config
-
-epochs: 10
-gradient_accumulation_steps: 32
