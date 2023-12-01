@@ -5,16 +5,13 @@ import hydra
 import pandas as pd
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
-from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
 import wandb
 from src.configs import TrainingConfigs
-from src.factories import get_dataset, get_lr_scheduler, get_optimizer
-from src.models import ChatModelPipeline, LanguageModelPipeline
+from src.factories import get_dataset, get_lr_scheduler, get_optimizer, get_pipeline
 
 
 class Trainer:
@@ -24,7 +21,7 @@ class Trainer:
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_dir = hydra_cfg["runtime"]["output_dir"]
 
-        self.pipeline = ChatModelPipeline(self.configs.model)
+        self.pipeline = get_pipeline(self.configs.model)
         self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(

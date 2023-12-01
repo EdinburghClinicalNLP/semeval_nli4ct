@@ -31,7 +31,6 @@ class ChatModelPipeline:
         self,
         inputs,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
-        # TODO: Mistral doesn't cater system message, GPT-4 is completely different
         prompt = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": inputs["text"][0]},

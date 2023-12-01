@@ -37,6 +37,7 @@ class LRSchedulerConfigs:
 @dataclass
 class ModelConfigs:
     name: str = MISSING
+    pipeline: str = MISSING
     configs: dict = MISSING
 
 
