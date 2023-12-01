@@ -25,7 +25,7 @@ def main():
 
     secret_env_vars = configs["env_vars"]
     commands = {}
-    for config in configs["configs"]:
+    for config in configs["runs"]:
         commands[config.replace("_", "-").replace("/", "-")] = {
             "command": base_command + config["experiment"],
             "gpu_product": config["gpu_product"],
