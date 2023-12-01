@@ -3,6 +3,7 @@ import json
 from typing import List
 
 import pandas as pd
+import scispacy
 import spacy
 from tqdm import tqdm
 
@@ -115,7 +116,6 @@ def main():
 
     # Replace entities with synonyms
     modified_statements_dict = dict()
-    i = 0
     for statement_id, statement in tqdm(
         zip(statement_ids, statements), total=len(statement_ids)
     ):
@@ -124,9 +124,6 @@ def main():
             "original": statement,
             "modified": modified_statements,
         }
-        if i >= 50:
-            break
-        i += 1
 
     # Save the dictionary to a JSON file
     data_name = args.data_path.split("/")[-1].replace(".json", "")
