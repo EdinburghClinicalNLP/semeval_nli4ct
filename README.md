@@ -33,9 +33,10 @@ Challenges to solve:
 | Model          | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | LLaMA2-7b-chat | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
+| GPT-4          |  |  |  |  |  |  |  |  |
+| LLaMA2-7b      |  |  |  |  |  |  |  |  |
 | Mistral-7b     |  |  |  |  |  |  |  |  |
 | MistralLite-7b |  |  |  |  |  |  |  |  |
-| GPT-4          |  |  |  |  |  |  |  |  |
 
 :warning: *Note: "Train_\*" performance indicates the performance on the training split, but still in a zero-shot setup* :warning:
 
