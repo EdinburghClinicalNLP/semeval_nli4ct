@@ -59,8 +59,7 @@ class ChatDataset(torch.utils.data.Dataset):
             file_name = os.path.join(claims_dir, primary_cts[claim_id] + ".json")
 
             section = sections[claim_id]
-            evidence_prompt = "Evidence: "
-            evidence = evidence_prompt
+            evidence = "Evidence: "
 
             with open(file_name, "r") as f:
                 data = json.load(f)
