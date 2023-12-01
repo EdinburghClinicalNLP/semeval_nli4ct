@@ -3,8 +3,9 @@ import json
 from typing import List
 
 import pandas as pd
-import scispacy
 import spacy
+from scispacy.abbreviation import AbbreviationDetector
+from scispacy.linking import EntityLinker
 from tqdm import tqdm
 
 ALLOCATED_KEYWORDS = {
