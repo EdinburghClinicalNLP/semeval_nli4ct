@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional, Tuple
 
 import torch
@@ -12,37 +13,59 @@ class LanguageModelPipeline:
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
             model_configs.configs.model_name_or_path,
+            torch_dtype="auto",
+            device_map="auto",
+            low_cpu_mem_usage=True,
+            load_in_4bit=True,
         )
-        self.tokenizer = self._load_tokenizer()
-
-    def _load_tokenizer(self):
-        tokenizer = AutoTokenizer.from_pretrained(
-            self.model_configs.configs.model_name_or_path
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_configs.configs.model_name_or_path
         )
 
-        if (
-            getattr(tokenizer, "pad_token_id") is None
-            or getattr(tokenizer, "pad_token") is None
-        ):
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-
-        return tokenizer
+        self.max_seq_len = model_configs.configs.max_seq_len
 
     def generate(
         self,
         inputs,
-        max_gen_len: int,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
+        model_input = self.tokenizer(
+            inputs["text"][0], return_tensors="pt", max_length=self.max_seq_len
+        ).to(self.model.device)
+        max_new_tokens = self.max_seq_len - model_input["input_ids"].size(1)
+
         with torch.inference_mode():
             output = self.model.generate(
-                **inputs,
-                max_new_tokens=max_gen_len,
-                pad_token_id=self.tokenizer.pad_token_id
+                **model_input,
+                temperature=self.model_configs.configs.temperature,
+                top_p=self.model_configs.configs.top_p,
+                top_k=self.model_configs.configs.top_k,
+                repetition_penalty=self.model_configs.configs.repetition_penalty,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                pad_token_id=self.tokenizer.eos_token_id,
+                num_return_sequences=1,
+            )
+            decoded_text = self.tokenizer.decode(
+                output[0, model_input["input_ids"].size(1) :], skip_special_tokens=True
             )
 
-        decoded_text = self.tokenizer.decode(
-            output[0, inputs["input_ids"].shape[1] :], skip_special_tokens=True
-        )
+        return {
+            "decoded_text": decoded_text,
+            "input_length": model_input["input_ids"].size(1),
+            "max_new_tokens": max_new_tokens,
+        }
 
-        return decoded_text
+    @staticmethod
+    def postprocess_prediction(answer):
+        """
+        If the output is structured correctly, the first word will be the answer.
+        If not, take note that it cannot be parsed correctly.
+        """
+        final_answer = re.split("[\.\s\:\n]+", answer.lower().strip())[0].strip()
+
+        if final_answer in ["contradiction", "entailment"]:
+            # Return the first word
+            return final_answer
+        else:
+            # Return original answer if the string is empty
+            return answer

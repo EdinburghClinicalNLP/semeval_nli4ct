@@ -19,4 +19,8 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 configs:
-  - llama2_7b_chat_zeroshot
+  - zero_shot/llama2_7b_chat
+  - zero_shot/llama2_7b
+  - zero_shot/llama2_13b_chat
+  - zero_shot/llama2_13b
+  - zero_shot/mistral_7b

@@ -2,9 +2,10 @@ defaults:
   - base_config
   - data: nli4ct_practice
   - dataloader: baseline
-  - model: clinical_llama
+  - model: llama2_7b
   - optimizer: adamw
   - lr_scheduler: warmup_linear_decay
+  - trainer: fine_tune
   - experiment: null
   - _self_
 

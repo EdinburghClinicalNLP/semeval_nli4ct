@@ -3,9 +3,4 @@ defaults:
   - override /model: mistral_7b
   - override /data: nli4ct_practice
   - override /dataloader: chat
-
-
-trainer:
-  experiment_name: mistral_7b
-  epochs: 0
-  gradient_accumulation_steps: 64
+  - override /trainer: zero_shot

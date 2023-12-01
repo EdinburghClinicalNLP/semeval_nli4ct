@@ -4,7 +4,13 @@ import torch
 from transformers import PreTrainedModel, get_scheduler
 
 from src import datasets
-from src.configs import DataLoaderConfigs, LRSchedulerConfigs, OptimizerConfigs
+from src import models
+from src.configs import (
+    DataLoaderConfigs,
+    LRSchedulerConfigs,
+    ModelConfigs,
+    OptimizerConfigs,
+)
 
 
 def get_optimizer(
@@ -35,3 +41,8 @@ def get_lr_scheduler(
 
 def get_dataset(dataloader_config: DataLoaderConfigs):
     return getattr(datasets, dataloader_config.dataset_loader)
+
+
+def get_pipeline(model_config: ModelConfigs):
+    pipeline = getattr(models, model_config.pipeline)
+    return pipeline

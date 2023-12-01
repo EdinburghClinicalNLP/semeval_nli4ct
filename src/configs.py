@@ -23,9 +23,8 @@ class DataLoaderConfigs:
 
 @dataclass
 class TrainerConfigs:
-    experiment_name: str = MISSING
-    epochs: int = MISSING
-    gradient_accumulation_steps: int = MISSING
+    name: str = MISSING
+    configs: dict = MISSING
 
 
 @dataclass
@@ -37,6 +36,7 @@ class LRSchedulerConfigs:
 @dataclass
 class ModelConfigs:
     name: str = MISSING
+    pipeline: str = MISSING
     configs: dict = MISSING
 
 

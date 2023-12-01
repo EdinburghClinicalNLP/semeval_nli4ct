@@ -5,16 +5,13 @@ import hydra
 import pandas as pd
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
-from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, DefaultDataCollator
 
 import wandb
 from src.configs import TrainingConfigs
-from src.factories import get_dataset, get_lr_scheduler, get_optimizer
-from src.models import ChatModelPipeline, LanguageModelPipeline
+from src.factories import get_dataset, get_lr_scheduler, get_optimizer, get_pipeline
 
 
 class Trainer:
@@ -24,11 +21,11 @@ class Trainer:
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_dir = hydra_cfg["runtime"]["output_dir"]
 
-        self.pipeline = ChatModelPipeline(self.configs.model)
+        self.pipeline = get_pipeline(self.configs.model)(self.configs.model)
         self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(
-            gradient_accumulation_steps=self.configs.trainer.gradient_accumulation_steps,
+            gradient_accumulation_steps=self.configs.trainer.configs.gradient_accumulation_steps,
             log_with="wandb",
         )
 
@@ -54,11 +51,11 @@ class Trainer:
         return dataloaders
 
     def _setup_run(self):
-        ## Set group name
-        self.wandb_group_name = ""
+        ## Set group name by trainer name (i.e. zero_shot, fine_tune)
+        self.wandb_group_name = self.configs.trainer.name
 
-        # TODO: This is just a shortcut for the moment. Naming should be more comprehensive
-        self.wandb_run_name = self.configs.trainer.experiment_name
+        # Naming by model name
+        self.wandb_run_name = self.configs.model.name
 
         self.wandb_tracker = None
         if self.accelerator.is_main_process:
@@ -122,7 +119,7 @@ class Trainer:
         return {"accuracy": acc, "precision": prec, "recall": recall, "f1": f1}
 
     def train(self):
-        for epoch in range(self.configs.trainer.epochs):
+        for epoch in range(self.configs.trainer.configs.epochs):
             self.pipeline.model.train()
             break
 

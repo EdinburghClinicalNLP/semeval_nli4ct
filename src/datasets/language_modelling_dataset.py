@@ -35,9 +35,7 @@ class LanguageModellingDataset(torch.utils.data.Dataset):
 
         self.encodings = tokenizer(
             self.inputs,
-            # return_tensors="pt",
             add_special_tokens=True,
-            # padding=True,
         )
 
     def generate_data(
@@ -50,7 +48,12 @@ class LanguageModellingDataset(torch.utils.data.Dataset):
             file_path (str): Path to the JSON of the dataset.
 
         Returns:
-            joint_data: List of training instances in form of "claim [SEP] evidence_text" (str)
+            joint_data (List[str]): List of training instances in form of:
+                "
+                    Evidence: primary trial: <primary_evidence_text> | secondary trial: <secondary_evidence_text>
+                    Statement: <statement_text>
+                    Answer:
+                "
             labels: List of labels, either 1 for "Entailment" or 0 for "Contradiction" (int)
         """
 
