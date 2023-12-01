@@ -44,17 +44,6 @@ Challenges to solve:
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
-### RQ 1.2: Is parameter fine-tuning necessary?
-
-Note: Base model is the best-performing LLM from the previous sub-RQ.
-
-| Model     | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
-| --------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot |                |          |                 |              |                |          |                 |              |
-| 1-shot    |                |          |                 |              |                |          |                 |              |
-| 2-shot    |                |          |                 |              |                |          |                 |              |
-| LoRA      |                |          |                 |              |                |          |                 |              |
-
 ### (Bonus) RQ 1.3: Do pretrained LLMs exhibit hypothesis-only bias?
 
 LLMs may ignore the supplied evidence altogether, and investigation is necessary to understand whether the LLMs predict the same albeit the supplied CTR is different.
@@ -112,9 +101,20 @@ Hence, experiments with dense retriever is necessary.
 | PubMedBERT (Dense)  |                |          |                 |              |                |          |                 |              |
 | BioLinkBERT (Dense) |                |          |                 |              |                |          |                 |              |
 
-### RQ 3: Can LLMs predict in a faithful and consistent manner?
+### RQ 3: Is parameter fine-tuning necessary?
 
-#### RQ 3.1: Can LLMs predict consistently should the input data is lexically altered?
+Note: Base model is the best-performing LLM from the previous sub-RQ.
+
+| Model     | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| --------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot |                |          |                 |              |                |          |                 |              |
+| 1-shot    |                |          |                 |              |                |          |                 |              |
+| 2-shot    |                |          |                 |              |                |          |                 |              |
+| LoRA      |                |          |                 |              |                |          |                 |              |
+
+### RQ 4: Can LLMs predict in a faithful and consistent manner?
+
+#### RQ 4.1: Can LLMs predict consistently should the input data is lexically altered?
 
 To evaluate the consistency of the LLMs' predictions, we can try to alter the input data while keeping its meaning.
 We created a contrastive corpus to evaluate this.
