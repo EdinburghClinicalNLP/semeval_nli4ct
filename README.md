@@ -41,6 +41,7 @@ Challenges to solve:
 | Mistral-7b      |                |          |                 |              |                |          |                 |              |
 | Mistral-13b     |                |          |                 |              |                |          |                 |              |
 | MistralLite-7b  |                |          |                 |              |                |          |                 |              |
+| Meditron-7b     |                |          |                 |              |                |          |                 |              |
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
