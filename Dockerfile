@@ -28,3 +28,5 @@ RUN pip install -U pydantic==1.10.12
 RUN pip install -U transformers
 RUN pip install -U tokenizers
 RUN pip install bitsandbytes
+RUN pip install scispacy
+RUN pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.3/en_ner_bc5cdr_md-0.5.3.tar.gz
