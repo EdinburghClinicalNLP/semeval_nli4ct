@@ -43,12 +43,12 @@ Challenges to solve:
 
 Note: Base model is the best-performing LLM from the previous sub-RQ.
 
-| Model      | F1 | Precision | Recall |
-| ---------- | -- | --------- | ------ |
-| Zero-shot  |    |           |        |
-| 1-shot     |    |           |        |
-| 2-shot     |    |           |        |
-| LoRA       |    |           |        |
+| Model      | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ---------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot  |  |  |  |  |  |  |  |  |
+| 1-shot     |  |  |  |  |  |  |  |  |
+| 2-shot     |  |  |  |  |  |  |  |  |
+| LoRA       |  |  |  |  |  |  |  |  |
 
 ### (Bonus) RQ 1.3: Do pretrained LLMs exhibit hypothesis-only bias?
 
@@ -82,13 +82,13 @@ $$
 where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
 
 
-| Model                           | F1 | Precision | Recall |
-| ------------------------------- | -- | --------- | ------ |
-| Zero-shot                       |    |           |        |
-| BM25                            |    |           |        |
-| BM25 + length penalty           |    |           |        |
-| Iterative BM25                  |    |           |        |
-| Iterative BM25 + length penalty |    |           |        |
+| Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot                       |  |  |  |  |  |  |  |  |
+| BM25                            |  |  |  |  |  |  |  |  |
+| BM25 + length penalty           |  |  |  |  |  |  |  |  |
+| Iterative BM25                  |  |  |  |  |  |  |  |  |
+| Iterative BM25 + length penalty |  |  |  |  |  |  |  |  |
 
 #### RQ 2.2: Is statement sufficient as a query?
 
@@ -100,12 +100,57 @@ We noticed several statements which require a degree of biomedical knowledge to 
 Sparse retrievers may not work well for these instances.
 Hence, experiments with dense retriever is necessary.
 
-| Model                           | F1 | Precision | Recall |
-| ------------------------------- | -- | --------- | ------ |
-| Zero-shot                       |    |           |        |
-| BM25                            |    |           |        |
-| PubMedBERT (Dense)              |    |           |        |
-| BioLinkBERT (Dense)             |    |           |        |
+| Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot                       |  |  |  |  |  |  |  |  |
+| BM25                            |  |  |  |  |  |  |  |  |
+| PubMedBERT (Dense)              |  |  |  |  |  |  |  |  |
+| BioLinkBERT (Dense)             |  |  |  |  |  |  |  |  |
+
+### RQ 3: Can LLMs predict in a faithful and consistent manner?
+
+#### RQ 3.1: Can LLMs predict consistently should the input data is lexically altered?
+
+To evaluate the consistency of the LLMs' predictions, we can try to alter the input data while keeping its meaning.
+We created a contrastive corpus to evaluate this.
+This contrastive corpus is created by replacing entities within the statements with their synonyms.
+We utilised `scispacy` pipeline, specifically:
+- NER model (`en_ner_bc5cdr_md`) to extract `CHEMICAL` and `DISEASE` entities
+- Abbreviation Detector
+- Entity linker (UMLS)
+
+We also implemented a naive postprocessing to remove synonyms that contain: `,`, `(`, and `)` which are unlikely to appear in real statements. For instance:
+> Original entity: `capecitabine` \
+> CUI: `C0671970` \
+> Aliases:
+>   - Capecitabinum :white_check_mark:
+>   - Capecitabine-containing product :white_check_mark:
+>   - Capécitabine :white_check_mark:
+>   - Capecitabine :white_check_mark:
+>   - CAPE :white_check_mark:
+>   - Capecitabin :white_check_mark:
+>   - Capecitabine (substance) :x:
+>   - 5'-Deoxy-5-fluoro-N-[(pentyloxy)carbonyl]-cytidine :x:
+>   - pentyl 1-(5-deoxy-β-D-ribofuranosyl)-5-fluoro-1,2-dihydro-2-oxo-4-pyrimidinecarbamate :x:
+>   - N(4)-pentyloxycarbonyl-5'-deoxy-5-fluorocytidine :x:
+
+To create the corpus:
+
+```bash
+# Create contrastive corpus from the training statements
+python scripts/create_contrastive_corpus.py --data_path data/train.json
+# Create contrastive corpus from the validation statements
+python scripts/create_contrastive_corpus.py --data_path data/dev.json
+```
+
+One potential solution to address this consistency is by fine-tuning the model in a contrastive learning framework, forcing the model to encode semantically equivalent statements similarly.
+
+| Model                   | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ----------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| Zero-shot               |  |  |  |  |  |  |  |  |
+| Retrieval-augmented ICL |  |  |  |  |  |  |  |  |
+| LoRA                    |  |  |  |  |  |  |  |  |
+| Contrastive fine-tuning |  |  |  |  |  |  |  |  |
 
 ## Task Description
 
