@@ -28,12 +28,12 @@ def main():
     for config in configs["configs"]:
         commands[config.replace("_", "-").replace("/", "-")] = {
             "command": base_command + config["experiment"],
-            "gpu_product": config["gpu_product"]
+            "gpu_product": config["gpu_product"],
         }
 
     for run_name, command in commands.items():
         # Create a Kubernetes Job with a name, container image, and command
-        print(f"Creating job for: {command["command"]}")
+        print(f"Creating job for: {command['command']}")
         job = KubernetesJob(
             name=run_name,
             image=configs["image"],
