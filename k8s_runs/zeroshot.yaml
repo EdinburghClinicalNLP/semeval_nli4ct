@@ -1,5 +1,4 @@
 gpu_limit: 1
-gpu_product: NVIDIA-A100-SXM4-40GB
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -18,9 +17,14 @@ env_vars:
     secret_name: aryo-secrets
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
-configs:
-  - zero_shot/llama2_7b_chat
-  - zero_shot/llama2_7b
-  - zero_shot/llama2_13b_chat
-  - zero_shot/llama2_13b
-  - zero_shot/mistral_7b
+runs:
+  - experiment: zero_shot/llama2_7b_chat
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: zero_shot/llama2_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: zero_shot/llama2_13b_chat
+    gpu_product: NVIDIA-A100-SXM4-80GB
+  - experiment: zero_shot/llama2_13b
+    gpu_product: NVIDIA-A100-SXM4-80GB
+  - experiment: zero_shot/mistral_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB

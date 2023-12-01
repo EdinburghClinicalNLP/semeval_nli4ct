@@ -26,21 +26,23 @@ def main():
     secret_env_vars = configs["env_vars"]
     commands = {}
     for config in configs["configs"]:
-        command = base_command + config
-        commands[config.replace("_", "-").replace("/", "-")] = command
+        commands[config.replace("_", "-").replace("/", "-")] = {
+            "command": base_command + config["experiment"],
+            "gpu_product": config["gpu_product"]
+        }
 
     for run_name, command in commands.items():
         # Create a Kubernetes Job with a name, container image, and command
-        print(f"Creating job for: {command}")
+        print(f"Creating job for: {command["command"]}")
         job = KubernetesJob(
             name=run_name,
             image=configs["image"],
             gpu_type="nvidia.com/gpu",
             gpu_limit=configs["gpu_limit"],
-            gpu_product=configs["gpu_product"],
+            gpu_product=command["gpu_product"],
             backoff_limit=4,
             command=["/bin/bash", "-c", "--"],
-            args=[base_args + command],
+            args=[base_args + command["command"]],
             secret_env_vars=secret_env_vars,
             user_email=args.user_email,
         )
