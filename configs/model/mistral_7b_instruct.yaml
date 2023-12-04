@@ -1,11 +1,12 @@
 defaults:
   - base_model_config
 
-name: Mistral-7b
+name: Mistral-7b-Instruct
 pipeline: ChatModelPipeline
 configs:
   model_name_or_path: mistralai/Mistral-7B-Instruct-v0.1
   max_seq_len: 4096
+  system_prompt: You are a clinician who detects contradictions and entailments between a section of a clinical trial report and a statement. Provide a concise one-word answer between contradiction and entailment.\n
   temperature: 0.001
   top_p: 0
   top_k: 1
