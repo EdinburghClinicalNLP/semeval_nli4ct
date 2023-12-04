@@ -76,6 +76,19 @@ $$
 
 where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
 
+To run the experiments efficiently, we retrieved the relevant documents per statement first.
+These documents are a concatenation of the CTR evidence and the statement.
+We first filter the documents whose Section and Type are the same as the query statement.
+Then, we score them using the retriever to get the most relevant documents.
+We separated contradiction and entailment examples to help decide the number of examples per label during the In-Context Learning phase.
+
+:warning: At the moment, it's only BM25 :warning:
+
+```bash
+python scripts/retrieve_in_context_examples.py dataloader=retriever
+```
+
+
 | Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | Zero-shot                       |                |          |                 |              |                |          |                 |              |
