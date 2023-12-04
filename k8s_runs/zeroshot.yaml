@@ -28,3 +28,9 @@ runs:
     gpu_product: NVIDIA-A100-SXM4-80GB
   - experiment: zero_shot/mistral_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: zero_shot/mistral_7b_instruct
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: zero_shot/mistrallite_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: zero_shot/meditron_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
