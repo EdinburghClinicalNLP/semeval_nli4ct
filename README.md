@@ -26,23 +26,28 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 
 ### RQ 1.1: Which LLM perform the best in zero-shot setting?
 
-Challenges to solve:
+#### Challenges to solve:
 
 - How to force the model to output a minimal response to the query? The model tends to give very long answers
   - Explore system message
 
-| Model           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
-| --------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| LLaMA2-7b-chat  | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
-| LLaMA2-13b-chat |                |          |                 |              |                |          |                 |              |
-| GPT-4           |                |          |                 |              |                |          |                 |              |
-| LLaMA2-7b       |                |          |                 |              |                |          |                 |              |
-| LLaMA2-13b      |                |          |                 |              |                |          |                 |              |
-| Mistral-7b      |                |          |                 |              |                |          |                 |              |
-| Mistral-13b     |                |          |                 |              |                |          |                 |              |
-| MistralLite-7b  |                |          |                 |              |                |          |                 |              |
+| Model               | Context Length | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ------------------- | -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| LLaMA2-7b-chat      | 4k             | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
+| LLaMA2-13b-chat     | 4k             | 0.4071         | 0.2949   | 0.0407          | 0.008235     | 0.38           | 0.2754   | 0               | 0            |
+| GPT-4               | 8k             |                |          |                 |              |                |          |                 |              |
+| LLaMA2-7b           | 4k             |                |          |                 |              |                |          |                 |              |
+| LLaMA2-13b          | 4k             |                |          |                 |              |                |          |                 |              |
+| Mistral-7b          | 4k             |                |          |                 |              |                |          |                 |              |
+| Mistral-7b-Instruct | 4k             |                |          |                 |              |                |          |                 |              |
+| MistralLite-7b      | 16k            |                |          |                 |              |                |          |                 |              |
+| Meditron-7b         | 2k             |                |          |                 |              |                |          |                 |              |
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
+
+#### Finding
+
+- Assuming Meditron does not perform well in zero-shot manner, we cannot use it in later stages (In-Context Learning) due to its limited context length.
 
 ### (Bonus) RQ 1.3: Do pretrained LLMs exhibit hypothesis-only bias?
 

@@ -1,0 +1,12 @@
+defaults:
+  - base_model_config
+
+name: Mistral-7b
+pipeline: ChatModelPipeline
+configs:
+  model_name_or_path: mistralai/Mistral-7B-Instruct-v0.1
+  max_seq_len: 4096
+  temperature: 0.001
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1
