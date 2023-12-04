@@ -35,13 +35,17 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 | ------------------- | -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | LLaMA2-7b-chat      | 4k             | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
 | LLaMA2-13b-chat     | 4k             | 0.4071         | 0.2949   | 0.0407          | 0.008235     | 0.38           | 0.2754   | 0               | 0            |
-| GPT-4               | 8k             |                |          |                 |              |                |          |                 |              |
-| LLaMA2-7b           | 4k             |                |          |                 |              |                |          |                 |              |
-| LLaMA2-13b          | 4k             |                |          |                 |              |                |          |                 |              |
-| Mistral-7b          | 4k             |                |          |                 |              |                |          |                 |              |
 | Mistral-7b-Instruct | 4k             |                |          |                 |              |                |          |                 |              |
-| MistralLite-7b      | 16k            |                |          |                 |              |                |          |                 |              |
-| Meditron-7b         | 2k             |                |          |                 |              |                |          |                 |              |
+| ~~GPT-4~~           | 8k             |                |          |                 |              |                |          |                 |              |
+| ~~LLaMA2-7b~~       | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~LLaMA2-13b~~      | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~Mistral-7b~~      | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~MistralLite-7b~~  | 16k            |                |          |                 |              |                |          |                 |              |
+| ~~Meditron-7b~~     | 2k             |                |          |                 |              |                |          |                 |              |
+
+Non-instruction tuned models can not generate a coherent response.
+For the moment (December 4th, 2023), we are going to focus on LLaMA2-7b-chat, LLaMA2-13b-chat, and Mistral-7b-Instruct.
+GPT-4 is not open access, we require budget which may not arrive on time for this experiment.
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
