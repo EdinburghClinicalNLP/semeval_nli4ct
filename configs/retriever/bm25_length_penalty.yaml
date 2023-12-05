@@ -1,0 +1,9 @@
+defaults:
+  - base_retriever_config
+
+name: CTRBM25OkapiLengthPenalty
+configs:
+  k1: 1.5
+  b: 0.75
+  epsilon: 0.25
+  top_k: 5
