@@ -23,7 +23,6 @@ class ChatModelPipeline:
         )
 
         self.system_prompt = model_configs.configs.system_prompt
-        self.system_prompt_len = len(self.tokenizer.encode(self.system_prompt))
 
         self.max_seq_len = model_configs.configs.max_seq_len
 
@@ -31,15 +30,22 @@ class ChatModelPipeline:
         self,
         inputs,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
-        prompt = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": inputs["text"][0]},
-        ]
+        if "mistral" in self.model_configs.configs.model_name_or_path.lower():
+            # Mistral doesn't allow system role
+            prompt = [
+                {"role": "user", "content": self.system_prompt + inputs["text"][0]},
+            ]
+        else:
+            prompt = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": inputs["text"][0]},
+            ]
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
         ).to(self.model.device)
-        max_new_tokens = self.max_seq_len - self.system_prompt_len - model_input.size(1)
+        # Limit generation length
+        max_new_tokens = min(256, self.max_seq_len - model_input.size(1))
 
         with torch.inference_mode():
             output = self.model.generate(

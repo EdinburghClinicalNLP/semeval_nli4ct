@@ -31,7 +31,8 @@ class LanguageModelPipeline:
         model_input = self.tokenizer(
             inputs["text"][0], return_tensors="pt", max_length=self.max_seq_len
         ).to(self.model.device)
-        max_new_tokens = self.max_seq_len - model_input["input_ids"].size(1)
+        # Limit generation length
+        max_new_tokens = min(256, self.max_seq_len - model_input["input_ids"].size(1))
 
         with torch.inference_mode():
             output = self.model.generate(
