@@ -111,8 +111,11 @@ pip install nltk
 python -m nltk.downloader punkt
 python -m nltk.downloader stopwords
 
-# retrieve in context examples
-python scripts/retrieve_in_context_examples.py dataloader=retriever
+# retrieve in context examples with BM25
+python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25
+
+# retrieve in context examples with BM25 + length penalty
+python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25_length_penalty
 
 # run in context predictions
 ```
