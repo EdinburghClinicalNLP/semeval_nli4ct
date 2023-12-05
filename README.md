@@ -30,31 +30,41 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 
 - How to force the model to output a minimal response to the query? The model tends to give very long answers
   - Explore system message
+- Non-instruction tuned models **cannot generate a coherent response**.
+  - For the moment (December 4th, 2023), we are going to focus on LLaMA2-7b-chat, LLaMA2-13b-chat, and Mistral-7b-Instruct.
+- GPT-4 is not open access, we require budget which may not arrive on time for this experiment.
+  - We also decided to ignore GPT-4
+
+#### Running the Experiments
+
+```bash
+python scripts/train.py experiment=zero_shot/llama2_7b_chat
+python scripts/train.py experiment=zero_shot/llama2_13b_chat
+python scripts/train.py experiment=zero_shot/mistral_7b_instruct
+```
+
+#### Results
 
 | Model               | Context Length | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------- | -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | LLaMA2-7b-chat      | 4k             | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
 | LLaMA2-13b-chat     | 4k             | 0.4071         | 0.2949   | 0.0407          | 0.008235     | 0.38           | 0.2754   | 0               | 0            |
 | Mistral-7b-Instruct | 4k             | 0.50176        | 0.48858  | 0.50134         | 0.66235      | 0.525          | 0.49467  | 0.51678         | 0.77         |
-| ~~GPT-4~~           | 8k             |                |          |                 |              |                |          |                 |              |
-| ~~LLaMA2-7b~~       | 4k             |                |          |                 |              |                |          |                 |              |
-| ~~LLaMA2-13b~~      | 4k             |                |          |                 |              |                |          |                 |              |
-| ~~Mistral-7b~~      | 4k             |                |          |                 |              |                |          |                 |              |
-| ~~MistralLite-7b~~  | 16k            |                |          |                 |              |                |          |                 |              |
-| ~~Meditron-7b~~     | 2k             |                |          |                 |              |                |          |                 |              |
-
-Non-instruction tuned models **cannot generate a coherent response**.
-For the moment (December 4th, 2023), we are going to focus on LLaMA2-7b-chat, LLaMA2-13b-chat, and Mistral-7b-Instruct.
-GPT-4 is not open access, we require budget which may not arrive on time for this experiment.
+<!-- | ~~GPT-4~~           | 8k             |                |          |                 |              |                |          |                 |              | -->
+<!-- | ~~LLaMA2-7b~~       | 4k             |                |          |                 |              |                |          |                 |              | -->
+<!-- | ~~LLaMA2-13b~~      | 4k             |                |          |                 |              |                |          |                 |              | -->
+<!-- | ~~Mistral-7b~~      | 4k             |                |          |                 |              |                |          |                 |              | -->
+<!-- | ~~MistralLite-7b~~  | 16k            |                |          |                 |              |                |          |                 |              | -->
+<!-- | ~~Meditron-7b~~     | 2k             |                |          |                 |              |                |          |                 |              | -->
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
 #### Finding
 
+- Zero-shot performance of all three experimented models are not very good.
+  - It may be attributed to the outputs that are not properly structured
+  - Some of them are also just plainly incorrect.
 - Assuming Meditron does not perform well in zero-shot manner, we cannot use it in later stages (In-Context Learning) due to its limited context length.
-
-### (Bonus) RQ 1.3: Do pretrained LLMs exhibit hypothesis-only bias?
-
 LLMs may ignore the supplied evidence altogether, and investigation is necessary to understand whether the LLMs predict the same albeit the supplied CTR is different.
 
 ### RQ 2: Can LLMs augmented with in-context examples perform better than zero-shot LLMs?
@@ -80,7 +90,7 @@ We will experiment with several setup:
 The length penalty in BM25 + length penalty can be defined as:
 
 $$
-penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i}
+penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i} - 1
 $$
 
 where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
@@ -93,10 +103,21 @@ We separated contradiction and entailment examples to help decide the number of 
 
 :warning: At the moment, it's only BM25 :warning:
 
+#### Running the Experiments
+
 ```bash
+# Install NLTK
+pip install nltk
+python -m nltk.downloader punkt
+python -m nltk.downloader stopwords
+
+# retrieve in context examples
 python scripts/retrieve_in_context_examples.py dataloader=retriever
+
+# run in context predictions
 ```
 
+#### Results
 
 | Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
@@ -122,6 +143,11 @@ Hence, experiments with dense retriever is necessary.
 | BM25                |                |          |                 |              |                |          |                 |              |
 | PubMedBERT (Dense)  |                |          |                 |              |                |          |                 |              |
 | BioLinkBERT (Dense) |                |          |                 |              |                |          |                 |              |
+
+#### RQ 2.4: Will interleaving Chain-of-Thought and retrieval help?
+
+[paper](https://arxiv.org/abs/2212.10509)
+
 
 ### RQ 3: Is parameter fine-tuning necessary?
 
