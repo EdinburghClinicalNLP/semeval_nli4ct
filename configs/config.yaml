@@ -6,6 +6,7 @@ defaults:
   - optimizer: adamw
   - lr_scheduler: warmup_linear_decay
   - trainer: fine_tune
+  - retriever: null
   - experiment: null
   - _self_
 

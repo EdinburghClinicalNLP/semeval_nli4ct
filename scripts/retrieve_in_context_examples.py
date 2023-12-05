@@ -9,14 +9,12 @@ from typing import List
 
 import hydra
 import pandas as pd
-import spacy
-from omegaconf import OmegaConf
+from hydra.core.hydra_config import HydraConfig
 from tqdm import tqdm
 
-from src.configs import TrainingConfigs, register_base_configs
+from src.configs import RetrieverConfigs, TrainingConfigs, register_base_configs
 from src.datasets import RetrieverDataset
-from src.factories import get_dataset
-from src.retrievers.bm25_okapi import CTRBM25Okapi
+from src.factories import get_dataset, get_retriever
 
 
 def load_data(configs: TrainingConfigs):
@@ -31,9 +29,13 @@ def load_data(configs: TrainingConfigs):
     return datasets
 
 
-def bm25_retriever(query_corpus: RetrieverDataset, knowledge_corpus: RetrieverDataset):
+def bm25_retriever(
+    retriever_configs: RetrieverConfigs,
+    query_corpus: RetrieverDataset,
+    knowledge_corpus: RetrieverDataset,
+):
     # Create BM25 object
-    bm25 = CTRBM25Okapi(knowledge_corpus)
+    bm25 = get_retriever(retriever_configs)(knowledge_corpus)
 
     query_corpus = pd.DataFrame(query_corpus.data)
 
@@ -60,13 +62,25 @@ def main(configs: TrainingConfigs):
     # Load data
     datasets: dict = load_data(configs)
 
+    hydra_cfg = HydraConfig.get()
+    outputs_dir = f"in_context_examples/{hydra_cfg.runtime.choices.retriever}"
+    os.makedirs(outputs_dir, exist_ok=True)
+
     for split in ["train", "valid", "test"]:
         # Run retrieval
         relevant_documents = bm25_retriever(
-            query_corpus=datasets[split], knowledge_corpus=datasets["train"]
+            configs.retriever,
+            query_corpus=datasets[split],
+            knowledge_corpus=datasets["train"],
         )
         # Save the in context examples as a json file
-        with open(f"{split}_bm25_in_context_examples.json", "w") as json_file:
+        with open(
+            os.path.join(
+                outputs_dir,
+                f"{split}_in_context_examples.json",
+            ),
+            "w",
+        ) as json_file:
             json.dump(relevant_documents, json_file)
 
 

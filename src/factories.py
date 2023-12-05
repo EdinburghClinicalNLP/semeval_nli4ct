@@ -3,13 +3,13 @@ from typing import Optional
 import torch
 from transformers import PreTrainedModel, get_scheduler
 
-from src import datasets
-from src import models
+from src import datasets, models, retrievers
 from src.configs import (
     DataLoaderConfigs,
     LRSchedulerConfigs,
     ModelConfigs,
     OptimizerConfigs,
+    RetrieverConfigs,
 )
 
 
@@ -45,4 +45,9 @@ def get_dataset(dataloader_config: DataLoaderConfigs):
 
 def get_pipeline(model_config: ModelConfigs):
     pipeline = getattr(models, model_config.pipeline)
+    return pipeline
+
+
+def get_retriever(retriever_config: RetrieverConfigs):
+    pipeline = getattr(retrievers, retriever_config.name)
     return pipeline
