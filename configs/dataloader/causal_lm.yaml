@@ -1,7 +1,7 @@
 defaults:
   - base_dataloader_config
 
-dataset_loader: LanguageModellingDataset
+dataset_loader: CausalLMDataset
 configs:
   batch_size: 1
   num_workers: 8

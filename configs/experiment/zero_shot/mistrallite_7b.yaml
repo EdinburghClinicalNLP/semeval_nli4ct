@@ -2,5 +2,5 @@
 defaults:
   - override /model: mistrallite_7b
   - override /data: nli4ct_practice
-  - override /dataloader: chat
+  - override /dataloader: causal_lm
   - override /trainer: zero_shot
