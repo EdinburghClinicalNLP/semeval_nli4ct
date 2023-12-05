@@ -35,13 +35,17 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 | ------------------- | -------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | LLaMA2-7b-chat      | 4k             | 0.49           | 0.4759   | 0.4851          | 0.3259       | 0.5            | 0.4927   | 0.5             | 0.38         |
 | LLaMA2-13b-chat     | 4k             | 0.4071         | 0.2949   | 0.0407          | 0.008235     | 0.38           | 0.2754   | 0               | 0            |
-| GPT-4               | 8k             |                |          |                 |              |                |          |                 |              |
-| LLaMA2-7b           | 4k             |                |          |                 |              |                |          |                 |              |
-| LLaMA2-13b          | 4k             |                |          |                 |              |                |          |                 |              |
-| Mistral-7b          | 4k             |                |          |                 |              |                |          |                 |              |
-| Mistral-7b-Instruct | 4k             |                |          |                 |              |                |          |                 |              |
-| MistralLite-7b      | 16k            |                |          |                 |              |                |          |                 |              |
-| Meditron-7b         | 2k             |                |          |                 |              |                |          |                 |              |
+| Mistral-7b-Instruct | 4k             | 0.50176        | 0.48858  | 0.50134         | 0.66235      | 0.525          | 0.49467  | 0.51678         | 0.77         |
+| ~~GPT-4~~           | 8k             |                |          |                 |              |                |          |                 |              |
+| ~~LLaMA2-7b~~       | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~LLaMA2-13b~~      | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~Mistral-7b~~      | 4k             |                |          |                 |              |                |          |                 |              |
+| ~~MistralLite-7b~~  | 16k            |                |          |                 |              |                |          |                 |              |
+| ~~Meditron-7b~~     | 2k             |                |          |                 |              |                |          |                 |              |
+
+Non-instruction tuned models can not generate a coherent response.
+For the moment (December 4th, 2023), we are going to focus on LLaMA2-7b-chat, LLaMA2-13b-chat, and Mistral-7b-Instruct.
+GPT-4 is not open access, we require budget which may not arrive on time for this experiment.
 
 :warning: _Note: "Train\_\*" performance indicates the performance on the training split, but still in a zero-shot setup_ :warning:
 
@@ -80,6 +84,19 @@ penalty(x, D_i) = \frac{\alpha (avg(|D|)) + avg(|S|) - |x|}{D_i}
 $$
 
 where $\alpha$ denotes the number of documents that the pipeline ideally should retrieve, $x$ denotes the statement. In the iterative BM25, we may want to consider the previously retrieved document, such that $x$ denotes the concatenation of retrieved document(s) and the statement. (Discussion: Each model has a different context length limitation. Should this be reflected?)
+
+To run the experiments efficiently, we retrieved the relevant documents per statement first.
+These documents are a concatenation of the CTR evidence and the statement.
+We first filter the documents whose Section and Type are the same as the query statement.
+Then, we score them using the retriever to get the most relevant documents.
+We separated contradiction and entailment examples to help decide the number of examples per label during the In-Context Learning phase.
+
+:warning: At the moment, it's only BM25 :warning:
+
+```bash
+python scripts/retrieve_in_context_examples.py dataloader=retriever
+```
+
 
 | Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |

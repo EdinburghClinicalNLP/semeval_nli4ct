@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 import pandas as pd
 from rank_bm25 import BM25Okapi
@@ -13,7 +15,7 @@ class CTRBM25Okapi(BM25Okapi):
 
     def __init__(
         self, corpus: RetrieverDataset, tokenizer=None, k1=1.5, b=0.75, epsilon=0.25
-    ):
+    ) -> None:
         self.corpus_df = pd.DataFrame(corpus.data)
 
         corpus = [
@@ -21,9 +23,11 @@ class CTRBM25Okapi(BM25Okapi):
             for evidence, statement in self.corpus_df[["evidence", "statement"]].values
         ]
 
-        super().__init__(corpus, tokenizer)
+        super().__init__(corpus, tokenizer, k1, b, epsilon)
 
-    def get_document_scores(self, query, section, type, statement_id, top_k=5):
+    def get_document_scores(
+        self, query, section, type, statement_id, top_k=5
+    ) -> Dict[str, list]:
         # Given the section and type, narrow down the search space
         relevant_docs = self.corpus_df.loc[
             (self.corpus_df["section"] == section) & (self.corpus_df["type"] == type)
@@ -39,23 +43,44 @@ class CTRBM25Okapi(BM25Okapi):
         )
 
         # Print the most similar documents
-        relevant_examples = []
+        # k examples for contradiction and entailment
+        relevant_contradiction_examples = []
+        relevant_entailment_examples = []
         for idx, score in ranked_documents:
             doc = self.corpus_df.iloc[idx]
             if statement_id == doc["id"]:
                 # Filter out the sentence itself if found in the ranking
                 continue
             else:
-                relevant_examples += [
-                    {
-                        "evidence": doc["evidence"],
-                        "statement": doc["statement"],
-                        "score": score,
-                    }
-                ]
+                if doc["labels"].lower() == "contradiction":
+                    # Take only top k examples per label
+                    if len(relevant_contradiction_examples) >= top_k:
+                        continue
+                    relevant_contradiction_examples += [
+                        {
+                            "id": doc["id"],
+                            "score": score,
+                        }
+                    ]
+                elif doc["labels"].lower() == "entailment":
+                    # Take only top k examples per label
+                    if len(relevant_entailment_examples) >= top_k:
+                        continue
+                    relevant_entailment_examples += [
+                        {
+                            "id": doc["id"],
+                            "score": score,
+                        }
+                    ]
 
             # Take only top k examples
-            if len(relevant_examples) >= top_k:
+            if (
+                len(relevant_contradiction_examples) >= top_k
+                and len(relevant_entailment_examples) >= top_k
+            ):
                 break
 
-        return relevant_examples
+        return {
+            "contradictions": relevant_contradiction_examples,
+            "entailments": relevant_entailment_examples,
+        }
