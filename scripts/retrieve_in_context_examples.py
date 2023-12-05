@@ -37,17 +37,21 @@ def bm25_retriever(query_corpus: RetrieverDataset, knowledge_corpus: RetrieverDa
 
     query_corpus = pd.DataFrame(query_corpus.data)
 
+    relevant_documents = {}
     for (
         statement_id,
         evidence_section,
         evidence_type,
         evidence,
         statement,
-    ) in query_corpus[["id", "section", "type", "evidence", "statement"]].values:
+    ) in tqdm(query_corpus[["id", "section", "type", "evidence", "statement"]].values):
         query = "\n".join([evidence, statement])
-        relevant_documents = bm25.get_document_scores(
+        documents = bm25.get_document_scores(
             query, evidence_section, evidence_type, statement_id
         )
+        relevant_documents[statement_id] = documents
+
+    return relevant_documents
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
@@ -56,11 +60,14 @@ def main(configs: TrainingConfigs):
     # Load data
     datasets: dict = load_data(configs)
 
-    # Run retrieval
-    bm25_retriever(datasets["train"], datasets["train"])
-    bm25_retriever(datasets["valid"], datasets["train"])
-
-    ## Datasets contain the evidence and statement that can be used as query
+    for split in ["train", "valid", "test"]:
+        # Run retrieval
+        relevant_documents = bm25_retriever(
+            query_corpus=datasets[split], knowledge_corpus=datasets["train"]
+        )
+        # Save the in context examples as a json file
+        with open(f"{split}_bm25_in_context_examples.json", "w") as json_file:
+            json.dump(relevant_documents, json_file)
 
 
 if __name__ == "__main__":
