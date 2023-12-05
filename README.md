@@ -43,7 +43,7 @@ Our proposed pipeline is an LLM-based solution which leverages In-Context exampl
 | ~~MistralLite-7b~~  | 16k            |                |          |                 |              |                |          |                 |              |
 | ~~Meditron-7b~~     | 2k             |                |          |                 |              |                |          |                 |              |
 
-Non-instruction tuned models can not generate a coherent response.
+Non-instruction tuned models **cannot generate a coherent response**.
 For the moment (December 4th, 2023), we are going to focus on LLaMA2-7b-chat, LLaMA2-13b-chat, and Mistral-7b-Instruct.
 GPT-4 is not open access, we require budget which may not arrive on time for this experiment.
 
