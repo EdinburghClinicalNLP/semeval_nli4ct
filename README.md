@@ -156,11 +156,13 @@ Hence, experiments with dense retriever is necessary.
 
 Note: Base model is the best-performing LLM from the previous sub-RQ.
 
+(Format: Template1/Template2/Tempalte3, Model = Mistral-7B-Instruct-v0.1)
+
 | Model     | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | --------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot |                |          |                 |              |                |          |                 |              |
-| 1-shot    |                |          |                 |              |                |          |                 |              |
-| 2-shot    |                |          |                 |              |                |          |                 |              |
+| Zero-shot | 0.4900/0.4929/0.4965 | 0.4899/0.4869/0.4301 | 0.4902/0.4910/0.4889 | 0.5024/0.3847/0.1553 | 0.4850/0.4450/0.4850 | 0.4828/0.4331/0.4461 | 0.4699/0.4927/0.5203 | 0.6153/0.5988/0.4835 |
+| 1-shot    | 0.7141/0.4494/0.4635 | 0.7135/0.4468/0.4448 | 0.6957/0.4555/0.4424 | 0.7612/0.5176/0.2800 | 0.5600/0.5200/0.5400 | 0.5589/0.5176/0.5383 | 0.5545/0.5175/0.5455 | 0.6100/0.5900/0.4800 |
+| 2-shot    | 0.4606/0.4912/0.5188 | 0.4474/0.4852/0.5182 | 0.4699/0.4927/0.5203 | 0.6153/0.5988/0.4835 | 0.5300/0.5350/0.5300 | 0.4868/0.5298/0.5277 | 0.5190/0.5289/0.5263 | 0.8200/0.6400/0.6000 |
 | LoRA      |                |          |                 |              |                |          |                 |              |
 
 ### RQ 4: Can LLMs predict in a faithful and consistent manner?
