@@ -28,10 +28,11 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
         top_k=5,
         dense_retriever_name: str = "michiyasunaga/BioLinkBERT-base",
     ) -> None:
-        print("Initialising BM25")
+        print(f"Initialising BM25 + Dense Reranker {dense_retriever_name}")
         self.corpus_df = pd.DataFrame(corpus.data)
 
         self.top_k = top_k
+        self.dense_retriever_name = dense_retriever_name
 
         corpus = []
         for evidence, statement in self.corpus_df[["evidence", "statement"]].values:
@@ -39,7 +40,9 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
             processed_statement = tokenize_and_stem(statement)
             corpus += [processed_evidence + processed_statement]
 
-        self.dense_retriever_model = AutoModel.from_pretrained(dense_retriever_name)
+        self.dense_retriever_model = AutoModel.from_pretrained(
+            dense_retriever_name,
+        ).to("cuda")
         self.dense_retriever_tokenizer = AutoTokenizer.from_pretrained(
             dense_retriever_name
         )
@@ -55,19 +58,26 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
         ]
         return self.dense_retriever_forward(corpus)
 
-    def dense_retriever_forward(self, texts):
+    def dense_retriever_forward(self, texts, batch_size=128):
         inputs = self.dense_retriever_tokenizer(
-            texts, return_tensors="pt", padding=True, truncation=True
+            texts, return_tensors="pt", padding=True, truncation=True, max_length=512
         )
 
         # Forward pass to get embeddings
+        embeddings_list = []
         with torch.no_grad():
-            outputs = self.dense_retriever_model(**inputs)
+            for i in range(0, inputs["input_ids"].size(0), batch_size):
+                batch_inputs = {key: value[i:i+batch_size].to("cuda") for key, value in inputs.items()}
+                outputs = self.dense_retriever_model(**batch_inputs)
+                if "bert" in self.dense_retriever_name.lower():
+                    # Extract the embeddings (CLS token embeddings in this case)
+                    embeddings = outputs.last_hidden_state[:, 0, :]
+                elif "contriever" in self.dense_retriever_name.lower():
+                    embeddings = mean_pooling(outputs, batch_inputs["attention_mask"])
+                embeddings_list += [embeddings.cpu().numpy()]
+        embeddings = np.concatenate(embeddings_list, axis=0)
 
-        # Extract the embeddings (CLS token embeddings in this case)
-        embeddings = outputs.last_hidden_state[:, 0, :]
-
-        return embeddings.numpy()
+        return embeddings
 
     def get_reranked_document_scores(self, query, retrieved_documents):
         # Get 10 * tok_k of retrieval candidates
@@ -129,7 +139,7 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
                     relevant_contradiction_examples += [
                         {
                             "id": doc["id"],
-                            "score": score,
+                            "score": np.float64(score),  # converting to json serialisable float64
                         }
                     ]
                 elif doc["labels"].lower() == "entailment":
@@ -139,7 +149,7 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
                     relevant_entailment_examples += [
                         {
                             "id": doc["id"],
-                            "score": score,
+                            "score": np.float64(score),  # converting to json serialisable float64
                         }
                     ]
 
@@ -154,3 +164,10 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
             "contradictions": relevant_contradiction_examples,
             "entailments": relevant_entailment_examples,
         }
+
+
+def mean_pooling(model_output, attention_mask):
+    token_embeddings = model_output[0] #First element of model_output contains all token embeddings
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
