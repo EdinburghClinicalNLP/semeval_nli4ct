@@ -1,0 +1,4 @@
+defaults:
+  - base_instruction_config
+
+instruction_template: "{evidence} Based on that paragraph can we conclude that this sentence is true? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "

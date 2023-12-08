@@ -6,7 +6,7 @@ pipeline: ChatModelPipeline
 configs:
   model_name_or_path: meta-llama/Llama-2-7b-chat-hf
   max_seq_len: 4096
-  system_prompt: You are a clinician who detects contradictions and entailments between a section of a clinical trial report and a statement. Provide a concise one-word answer between contradiction and entailment.\n
+  system_prompt: You are a clinician. Answer in 1 word whether there is a contradiction or an entailment between a section of a clinical trial report and a statement.
   temperature: 0.001
   top_p: 0
   top_k: 1

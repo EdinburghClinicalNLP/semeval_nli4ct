@@ -6,17 +6,24 @@ import pandas as pd
 import torch
 from transformers import PreTrainedTokenizer
 
-from src.configs import DataConfigs
+from src.configs import DataConfigs, InstructionConfigs
 
 
 class ChatDataset(torch.utils.data.Dataset):
-    def __init__(self, data_configs: DataConfigs, split: str, **kwargs):
+    def __init__(
+        self,
+        data_configs: DataConfigs,
+        instruction_configs: InstructionConfigs,
+        split: str,
+        **kwargs,
+    ):
         data_filename = getattr(data_configs, f"{split}_data_filename")
         self.data = self.generate_data(
             data_configs.data_dir,
             data_filename,
             data_configs.claims_dir,
         )
+        self.instruction_template = instruction_configs.instruction_template
 
     def generate_data(
         self, data_dir: str, data_filename: str, claims_dir: str
@@ -78,9 +85,7 @@ class ChatDataset(torch.utils.data.Dataset):
                     evidence += " ".join(data[section])
 
             evidence_texts.append(evidence)
-
-            prompted_statement = f"Statement: {statement}\nAnswer: "
-            statement_texts.append(prompted_statement)
+            statement_texts.append(statement)
 
         return {
             "id": statement_id,
@@ -96,7 +101,10 @@ class ChatDataset(torch.utils.data.Dataset):
             "id": self.data["id"][idx],
             "section": self.data["section"][idx],
             "type": self.data["type"][idx],
-            "text": self.data["evidence"][idx] + "\n" + self.data["statement"][idx],
+            "text": self.instruction_template.format(
+                evidence=self.data["evidence"][idx],
+                statement=self.data["statement"][idx],
+            ),
             "labels": self.data["labels"][idx],
         }
 

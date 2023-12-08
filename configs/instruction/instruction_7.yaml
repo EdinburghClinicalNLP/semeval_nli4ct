@@ -1,0 +1,4 @@
+defaults:
+  - base_instruction_config
+
+instruction_template: "Read the text and determine if the sentence is true: {evidence} Sentence: {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "

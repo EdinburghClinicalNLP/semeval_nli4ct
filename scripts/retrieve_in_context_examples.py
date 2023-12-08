@@ -29,13 +29,15 @@ def load_data(configs: TrainingConfigs):
     return datasets
 
 
-def bm25_retriever(
+def retrieve(
     retriever_configs: RetrieverConfigs,
     query_corpus: RetrieverDataset,
     knowledge_corpus: RetrieverDataset,
 ):
     # Create BM25 object
-    bm25 = get_retriever(retriever_configs)(knowledge_corpus)
+    bm25 = get_retriever(retriever_configs)(
+        knowledge_corpus, **retriever_configs.configs
+    )
 
     query_corpus = pd.DataFrame(query_corpus.data)
 
@@ -68,7 +70,7 @@ def main(configs: TrainingConfigs):
 
     for split in ["train", "valid", "test"]:
         # Run retrieval
-        relevant_documents = bm25_retriever(
+        relevant_documents = retrieve(
             configs.retriever,
             query_corpus=datasets[split],
             knowledge_corpus=datasets["train"],
