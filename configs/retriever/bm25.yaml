@@ -2,6 +2,7 @@ defaults:
   - base_retriever_config
 
 name: CTRBM25Okapi
+icl_examples_dir: in_context_examples/bm25
 configs:
   k1: 1.5
   b: 0.75

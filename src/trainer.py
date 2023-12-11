@@ -43,6 +43,7 @@ class Trainer:
                 self.configs.data,
                 self.configs.instruction,
                 self.configs.trainer,
+                icl_examples_dir=self.configs.retriever.icl_examples_dir,
                 tokenizer=self.pipeline.tokenizer,
                 split=split,
             )
@@ -58,10 +59,14 @@ class Trainer:
         ## Set group name by trainer name (i.e. zero_shot, fine_tune)
         self.wandb_group_name = self.configs.trainer.name
 
-        # Naming by model name
-        self.wandb_run_name = "__".join(
-            [self.configs.model.name, self.hydra_cfg.runtime.choices.instruction]
-        )
+        # Naming by model name, instruction name, and in context examples name
+        wandb_run_name = [
+            self.configs.model.name,
+            self.hydra_cfg.runtime.choices.instruction,
+        ]
+        if self.configs.trainer.name in ["one_shot", "two_shot"]:
+            wandb_run_name += [self.configs.retriever.icl_examples_dir.split("/")[-1]]
+        self.wandb_run_name = "__".join(wandb_run_name)
         print(self.wandb_run_name)
 
         self.wandb_tracker = None

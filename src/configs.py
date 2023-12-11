@@ -48,6 +48,7 @@ class InstructionConfigs:
 @dataclass
 class RetrieverConfigs:
     name: str = MISSING
+    icl_examples_dir: str = MISSING
     configs: dict = MISSING
 
 

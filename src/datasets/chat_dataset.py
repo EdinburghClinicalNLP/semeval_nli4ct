@@ -27,7 +27,9 @@ class ChatDataset(torch.utils.data.Dataset):
         data_filename = getattr(data_configs, f"{split}_data_filename")
         self.data_dir = data_configs.data_dir
         self.claims_dir = os.path.join(self.data_dir, data_configs.claims_dir)
-        self.train_data_filename = os.path.join(self.data_dir, data_configs.train_data_filename)
+        self.train_data_filename = os.path.join(
+            self.data_dir, data_configs.train_data_filename
+        )
 
         # Prepare ICL examples for one-shot and two-shot learning
         if self.trainer_configs.name in ["one_shot", "two_shot"]:
@@ -36,7 +38,7 @@ class ChatDataset(torch.utils.data.Dataset):
             self.query_corpus = self.query_corpus.transpose()
             self.icl_examples = pd.read_json(
                 os.path.join(
-                    self.trainer_configs.configs.in_context_examples_dir,
+                    kwargs["icl_examples_dir"],
                     self.split + ".json",
                 )
             )

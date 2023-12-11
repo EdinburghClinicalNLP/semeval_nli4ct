@@ -65,7 +65,7 @@ def main(configs: TrainingConfigs):
     datasets: dict = load_data(configs)
 
     hydra_cfg = HydraConfig.get()
-    outputs_dir = f"in_context_examples/{hydra_cfg.runtime.choices.retriever}"
+    outputs_dir = configs.retriever.icl_examples_dir
     os.makedirs(outputs_dir, exist_ok=True)
 
     for split in ["train", "valid", "test"]:
@@ -79,7 +79,7 @@ def main(configs: TrainingConfigs):
         with open(
             os.path.join(
                 outputs_dir,
-                f"{split}_in_context_examples.json",
+                f"{split}.json",
             ),
             "w",
         ) as json_file:
