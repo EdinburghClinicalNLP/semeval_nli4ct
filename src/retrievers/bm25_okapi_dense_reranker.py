@@ -97,8 +97,9 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
 
         # Get indices of top k most similar documents
         top_indices = np.argsort(similarities)[::-1]
+        reranked_candidates = [retrieved_doc_ids[idx] for idx in top_indices]
 
-        return zip(top_indices, similarities[top_indices])
+        return zip(reranked_candidates, similarities[top_indices])
 
     def get_document_scores(
         self, query, section, type, statement_id
