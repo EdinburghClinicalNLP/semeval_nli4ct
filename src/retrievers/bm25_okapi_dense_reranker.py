@@ -8,8 +8,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer
 
 from src.datasets import RetrieverDataset
-
-from .utils import tokenize_and_stem
+from src.retrievers.utils import tokenize_and_stem
+from src.utils.common_utils import setup_device
 
 
 class CTRBM25OkapiDenseReranker(BM25Okapi):
@@ -33,6 +33,7 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
 
         self.top_k = top_k
         self.dense_retriever_name = dense_retriever_name
+        self.device = setup_device()
 
         corpus = []
         for evidence, statement in self.corpus_df[["evidence", "statement"]].values:
@@ -42,21 +43,18 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
 
         self.dense_retriever_model = AutoModel.from_pretrained(
             dense_retriever_name,
-        ).to("cuda")
+        ).to(self.device)
         self.dense_retriever_tokenizer = AutoTokenizer.from_pretrained(
             dense_retriever_name
         )
+        self.dense_retriever_tokenizer.truncation_side = "left"
         self.document_embeddings = self.get_document_embeddings()
 
         super().__init__(corpus, tokenizer, k1, b, epsilon)
 
     def get_document_embeddings(self):
         # Tokenize the input texts
-        corpus = [
-            "\n".join([evidence, statement])
-            for evidence, statement in self.corpus_df[["evidence", "statement"]].values
-        ]
-        return self.dense_retriever_forward(corpus)
+        return self.dense_retriever_forward(self.corpus_df.statement.to_list())
 
     def dense_retriever_forward(self, texts, batch_size=128):
         inputs = self.dense_retriever_tokenizer(
@@ -67,7 +65,10 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
         embeddings_list = []
         with torch.no_grad():
             for i in range(0, inputs["input_ids"].size(0), batch_size):
-                batch_inputs = {key: value[i:i+batch_size].to("cuda") for key, value in inputs.items()}
+                batch_inputs = {
+                    key: value[i : i + batch_size].to(self.device)
+                    for key, value in inputs.items()
+                }
                 outputs = self.dense_retriever_model(**batch_inputs)
                 if "bert" in self.dense_retriever_name.lower():
                     # Extract the embeddings (CLS token embeddings in this case)
@@ -139,7 +140,9 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
                     relevant_contradiction_examples += [
                         {
                             "id": doc["id"],
-                            "score": np.float64(score),  # converting to json serialisable float64
+                            "score": np.float64(
+                                score
+                            ),  # converting to json serialisable float64
                         }
                     ]
                 elif doc["labels"].lower() == "entailment":
@@ -149,7 +152,9 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
                     relevant_entailment_examples += [
                         {
                             "id": doc["id"],
-                            "score": np.float64(score),  # converting to json serialisable float64
+                            "score": np.float64(
+                                score
+                            ),  # converting to json serialisable float64
                         }
                     ]
 
@@ -167,7 +172,12 @@ class CTRBM25OkapiDenseReranker(BM25Okapi):
 
 
 def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0] #First element of model_output contains all token embeddings
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
+    token_embeddings = model_output[
+        0
+    ]  # First element of model_output contains all token embeddings
+    input_mask_expanded = (
+        attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    )
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
+        input_mask_expanded.sum(1), min=1e-9
+    )
