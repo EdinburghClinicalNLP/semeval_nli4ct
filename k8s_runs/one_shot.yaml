@@ -28,23 +28,23 @@ runs:
     gpu_product: NVIDIA-A100-SXM4-80GB
   - experiment: one_shot/mistral_7b_instruct retriever=bm25_pubmedbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_7b_chat retriever=bm25
+  - experiment: one_shot/llama2_7b_chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_7b_chat retriever=bm25_length_penalty
+  - experiment: one_shot/llama2_7b_chat retriever=bm25_length_penalty
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_7b_chat retriever=bm25_contriever_reranker
+  - experiment: one_shot/llama2_7b_chat retriever=bm25_contriever_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_7b_chat retriever=bm25_biolinkbert_reranker
+  - experiment: one_shot/llama2_7b_chat retriever=bm25_biolinkbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_7b_chat retriever=bm25_pubmedbert_reranker
+  - experiment: one_shot/llama2_7b_chat retriever=bm25_pubmedbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_13b_chat retriever=bm25
+  - experiment: one_shot/llama2_13b_chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_13b_chat retriever=bm25_length_penalty
+  - experiment: one_shot/llama2_13b_chat retriever=bm25_length_penalty
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_13b_chat retriever=bm25_contriever_reranker
+  - experiment: one_shot/llama2_13b_chat retriever=bm25_contriever_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_13b_chat retriever=bm25_biolinkbert_reranker
+  - experiment: one_shot/llama2_13b_chat retriever=bm25_biolinkbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: one_shot/llama_13b_chat retriever=bm25_pubmedbert_reranker
+  - experiment: one_shot/llama2_13b_chat retriever=bm25_pubmedbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
