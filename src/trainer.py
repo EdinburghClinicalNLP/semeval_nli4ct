@@ -42,6 +42,7 @@ class Trainer:
             dataset = get_dataset(self.configs.dataloader)(
                 self.configs.data,
                 self.configs.instruction,
+                self.configs.trainer,
                 tokenizer=self.pipeline.tokenizer,
                 split=split,
             )

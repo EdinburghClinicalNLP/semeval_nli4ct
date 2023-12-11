@@ -27,14 +27,13 @@ class ChatDataset(torch.utils.data.Dataset):
         data_filename = getattr(data_configs, f"{split}_data_filename")
         self.data_dir = data_configs.data_dir
         self.claims_dir = os.path.join(self.data_dir, data_configs.claims_dir)
-        self.train_data_filename = (
-            os.path.join(self.data_dir, data_configs.train_data_filename),
-        )
+        self.train_data_filename = os.path.join(self.data_dir, data_configs.train_data_filename)
 
         # Prepare ICL examples for one-shot and two-shot learning
         if self.trainer_configs.name in ["one_shot", "two_shot"]:
             # Query corpus is the training data
             self.query_corpus = pd.read_json(self.train_data_filename)
+            self.query_corpus = self.query_corpus.transpose()
             self.icl_examples = pd.read_json(
                 os.path.join(
                     self.trainer_configs.configs.in_context_examples_dir,
@@ -60,17 +59,17 @@ class ChatDataset(torch.utils.data.Dataset):
         if self.num_in_context_examples == 1:
             # If one-shot, choose the highest between the contradiction and entailment examples
             if (
-                all_icl_examples["contradiction"][0]["score"]
-                > all_icl_examples["entailment"][0]["score"]
+                all_icl_examples["contradictions"][0]["score"]
+                > all_icl_examples["entailments"][0]["score"]
             ):
-                selected_icl_examples += [all_icl_examples["contradiction"][0]["id"]]
+                selected_icl_examples += [all_icl_examples["contradictions"][0]["id"]]
             else:
-                selected_icl_examples += [all_icl_examples["entailment"][0]["id"]]
+                selected_icl_examples += [all_icl_examples["entailments"][0]["id"]]
         elif self.num_in_context_examples == 2:
             # If two-shot, choose the highest of both the contradiction and entailment examples
             selected_icl_examples += [
-                all_icl_examples["contradiction"][0]["id"],
-                all_icl_examples["entailment"][0]["id"],
+                all_icl_examples["contradictions"][0]["id"],
+                all_icl_examples["entailments"][0]["id"],
             ]
 
         return selected_icl_examples
@@ -145,16 +144,17 @@ class ChatDataset(torch.utils.data.Dataset):
                 icl_statements = []
                 icl_labels = []
                 for icl_example_id in icl_example_ids:
+                    icl_example = self.query_corpus.loc[icl_example_id]
                     icl_evidences += [
                         self.generate_evidence_text(
-                            sections[icl_example_id],
-                            types[icl_example_id],
-                            primary_cts[icl_example_id],
-                            secondary_cts[icl_example_id],
+                            icl_example["Section_id"],
+                            icl_example["Type"],
+                            icl_example["Primary_id"],
+                            icl_example["Secondary_id"],
                         )
                     ]
-                    icl_statements += [df.loc[icl_example_id]["Statement"]]
-                    icl_labels += [df.loc[icl_example_id]["Label"]]
+                    icl_statements += [icl_example["Statement"]]
+                    icl_labels += [icl_example["Label"]]
                 icl_evidence_texts += [icl_evidences]
                 icl_statement_texts += [icl_statements]
                 icl_label_texts += [icl_labels]
