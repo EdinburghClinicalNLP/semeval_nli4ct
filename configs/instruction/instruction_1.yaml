@@ -1,4 +1,4 @@
 defaults:
   - base_instruction_config
 
-instruction_template: "{evidence} Based on the paragraph above can we conclude that {statement}?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "
+instruction_template: "{icl_example}{evidence} Based on the paragraph above can we conclude that {statement}?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "

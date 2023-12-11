@@ -1,4 +1,4 @@
 defaults:
   - base_instruction_config
 
-instruction_template: "Evidence: {evidence}\nStatement: {statement}\nQuestion: Is the statement a contradiction or an entailment?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "
+instruction_template: "{icl_example}Evidence: {evidence}\nStatement: {statement}\nQuestion: Is the statement a contradiction or an entailment?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "
