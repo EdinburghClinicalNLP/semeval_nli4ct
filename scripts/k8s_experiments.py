@@ -26,7 +26,16 @@ def main():
     secret_env_vars = configs["env_vars"]
     commands = {}
     for run in configs["runs"]:
-        commands[run["experiment"].replace("_", "-").replace("/", "-")] = {
+        if "retriever" in run["experiment"]:
+            run_name = (
+                run["experiment"]
+                .replace("_", "-")
+                .replace("/", "-")
+                .replace(" retriever=", "-")
+            )
+        else:
+            run_name = run["experiment"].replace("_", "-").replace("/", "-")
+        commands[run_name] = {
             "command": base_command + run["experiment"],
             "gpu_product": run["gpu_product"],
         }
