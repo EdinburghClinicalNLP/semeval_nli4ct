@@ -26,7 +26,7 @@ runs:
     gpu_product: NVIDIA-A100-SXM4-80GB
   - experiment: two_shot/mistral_7b_instruct retriever=bm25_biolinkbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
-    - experiment: two_shot/mistral_7b_instruct retriever=bm25_pubmedbert_reranker
+  - experiment: two_shot/mistral_7b_instruct retriever=bm25_pubmedbert_reranker
     gpu_product: NVIDIA-A100-SXM4-80GB
   - experiment: two_shot/llama_7b_chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
