@@ -67,7 +67,7 @@ python scripts/train.py experiment=zero_shot/mistral_7b_instruct
 - Assuming Meditron does not perform well in zero-shot manner, we cannot use it in later stages (In-Context Learning) due to its limited context length.
 LLMs may ignore the supplied evidence altogether, and investigation is necessary to understand whether the LLMs predict the same albeit the supplied CTR is different.
 
-### RQ 1.2: Which instruction template works best?
+<!-- ### RQ 1.2: Which instruction template works best?
 
 Zero shot performance of the model seems to be less competitive compared to [the runner up of last year's challenge (Flan-T5)](https://aclanthology.org/2023.semeval-1.137/).
 We hypothesised that this may have been caused by the instruction template.
@@ -114,7 +114,7 @@ Using the same LLM (LLaMA2-7b-chat):
 | 8           |                |          |                 |              |                |          |                 |              |
 | 9           |                |          |                 |              |                |          |                 |              |
 | 10          |                |          |                 |              |                |          |                 |              |
-| 11          |                |          |                 |              |                |          |                 |              |
+| 11          |                |          |                 |              |                |          |                 |              | -->
 
 ### RQ 2: Can LLMs augmented with in-context examples perform better than zero-shot LLMs?
 
@@ -160,24 +160,34 @@ pip install nltk
 python -m nltk.downloader punkt
 python -m nltk.downloader stopwords
 
-# retrieve in context examples with BM25
+# retrieve in context examples with BM25, BM25 + length penalty, BM25 + Dense rerankers
 python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25
-
-# retrieve in context examples with BM25 + length penalty
 python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25_length_penalty
+python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25_contriever_reranker
+python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25_biolinkbert_reranker
+python scripts/retrieve_in_context_examples.py dataloader=retriever retriever=bm25_pubmedbert_reranker
 
 # run in context predictions
+## One shot
+python scripts/train.py experiment=one_shot/mistral_7b_instruct retriever=bm25
+python scripts/train.py experiment=one_shot/mistral_7b_instruct retriever=bm25_length_penalty
+python scripts/train.py experiment=one_shot/mistral_7b_instruct retriever=bm25_contriever_reranker
+python scripts/train.py experiment=one_shot/mistral_7b_instruct retriever=bm25_biolinkbert_reranker
+
+## Two shot
+python scripts/train.py experiment=two_shot/mistral_7b_instruct retriever=bm25
+python scripts/train.py experiment=two_shot/mistral_7b_instruct retriever=bm25_length_penalty
+python scripts/train.py experiment=two_shot/mistral_7b_instruct retriever=bm25_contriever_reranker
+python scripts/train.py experiment=two_shot/mistral_7b_instruct retriever=bm25_biolinkbert_reranker
 ```
 
 #### Results
 
 | Model                           | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot                       |                |          |                 |              |                |          |                 |              |
+| Zero-shot                       | 0.50176        | 0.48858  | 0.50134         | 0.66235      | 0.525          | 0.49467  | 0.51678         | 0.77         |
 | BM25                            |                |          |                 |              |                |          |                 |              |
 | BM25 + length penalty           |                |          |                 |              |                |          |                 |              |
-| Iterative BM25                  |                |          |                 |              |                |          |                 |              |
-| Iterative BM25 + length penalty |                |          |                 |              |                |          |                 |              |
 
 #### RQ 2.2: Is statement sufficient as a query?
 
@@ -191,10 +201,10 @@ Hence, experiments with dense retriever is necessary.
 
 | Model               | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
-| Zero-shot           |                |          |                 |              |                |          |                 |              |
+| Zero-shot           | 0.50176        | 0.48858  | 0.50134         | 0.66235      | 0.525          | 0.49467  | 0.51678         | 0.77         |
 | BM25                |                |          |                 |              |                |          |                 |              |
-| PubMedBERT (Dense)  |                |          |                 |              |                |          |                 |              |
-| BioLinkBERT (Dense) |                |          |                 |              |                |          |                 |              |
+| Contriever (Dense, General)  |                |          |                 |              |                |          |                 |              |
+| BioLinkBERT (Dense, Biomedical) |                |          |                 |              |                |          |                 |              |
 
 #### RQ 2.4: Will interleaving Chain-of-Thought and retrieval help?
 
