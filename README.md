@@ -133,8 +133,6 @@ We will experiment with several setup:
 - Zero-shot: No in-context examples
 - BM25: Naively take top-k examples.
 - BM25 + length penalty: Penalise document length with respect to the input length (if the input is long, longer documents should be penalised. If the input is short, longer documents get penalised less). Take top-k examples from the adjusted score, and naively include it as examples to the model.
-- Iterative BM25: Naively take 1 top example for $k$ time.
-- Iterative BM25 + length penalty: Take 1 top example for $k$ time using the BM25 + length penalty.
 
 The length penalty in BM25 + length penalty can be defined as:
 
@@ -189,22 +187,23 @@ python scripts/train.py experiment=two_shot/mistral_7b_instruct retriever=bm25_b
 | BM25                            |                |          |                 |              |                |          |                 |              |
 | BM25 + length penalty           |                |          |                 |              |                |          |                 |              |
 
-#### RQ 2.2: Is statement sufficient as a query?
+#### RQ 2.2: Is domain-adapted dense reranker necessary?
 
-Should we also use the CTR section during the retrieval?
-
-#### RQ 2.3: Is domain-adapted dense retriever necessary?
+![In Context Examples Retrieval diagram](docs/icl_retrieval.png)
 
 We noticed several statements which require a degree of biomedical knowledge to understand concept synonyms.
 Sparse retrievers may not work well for these instances.
 Hence, experiments with dense retriever is necessary.
 
+However, the available dense retrievers tend to have a very small context length (i.e. 512).
+Thus, we experimented with dense retrievers that will only rerank based on the statements. 
+
 | Model               | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
 | ------------------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
 | Zero-shot           | 0.50176        | 0.48858  | 0.50134         | 0.66235      | 0.525          | 0.49467  | 0.51678         | 0.77         |
 | BM25                |                |          |                 |              |                |          |                 |              |
-| Contriever (Dense, General)  |                |          |                 |              |                |          |                 |              |
-| BioLinkBERT (Dense, Biomedical) |                |          |                 |              |                |          |                 |              |
+| BM25 + Contriever (Dense, General)  |                |          |                 |              |                |          |                 |              |
+| BM25 + BioLinkBERT (Dense, Biomedical) |                |          |                 |              |                |          |                 |              |
 
 #### RQ 2.4: Will interleaving Chain-of-Thought and retrieval help?
 
