@@ -41,8 +41,14 @@ class ModelConfigs:
 
 
 @dataclass
+class InstructionConfigs:
+    instruction_template: str = MISSING
+
+
+@dataclass
 class RetrieverConfigs:
     name: str = MISSING
+    icl_examples_dir: str = MISSING
     configs: dict = MISSING
 
 
@@ -67,6 +73,7 @@ class TrainingConfigs:
     model: ModelConfigs = MISSING
     retriever: RetrieverConfigs = MISSING
     optimizer: OptimizerConfigs = MISSING
+    instruction: InstructionConfigs = MISSING
     wandb_project: str = MISSING
     wandb_entity: str = MISSING
     debug: bool = False
@@ -90,6 +97,9 @@ def register_base_configs() -> None:
         group="lr_scheduler", name="base_lr_scheduler_config", node=LRSchedulerConfigs
     )
     configs_store.store(group="model", name="base_model_config", node=ModelConfigs)
+    configs_store.store(
+        group="instruction", name="base_instruction_config", node=InstructionConfigs
+    )
     configs_store.store(
         group="retriever", name="base_retriever_config", node=RetrieverConfigs
     )

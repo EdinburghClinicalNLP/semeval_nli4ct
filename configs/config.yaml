@@ -7,6 +7,7 @@ defaults:
   - lr_scheduler: warmup_linear_decay
   - trainer: fine_tune
   - retriever: bm25
+  - instruction: instruction_0
   - experiment: null
   - _self_
 

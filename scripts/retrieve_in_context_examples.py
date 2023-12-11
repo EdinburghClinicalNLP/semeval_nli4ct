@@ -29,13 +29,15 @@ def load_data(configs: TrainingConfigs):
     return datasets
 
 
-def bm25_retriever(
+def retrieve(
     retriever_configs: RetrieverConfigs,
     query_corpus: RetrieverDataset,
     knowledge_corpus: RetrieverDataset,
 ):
     # Create BM25 object
-    bm25 = get_retriever(retriever_configs)(knowledge_corpus)
+    bm25 = get_retriever(retriever_configs)(
+        knowledge_corpus, **retriever_configs.configs
+    )
 
     query_corpus = pd.DataFrame(query_corpus.data)
 
@@ -63,12 +65,12 @@ def main(configs: TrainingConfigs):
     datasets: dict = load_data(configs)
 
     hydra_cfg = HydraConfig.get()
-    outputs_dir = f"in_context_examples/{hydra_cfg.runtime.choices.retriever}"
+    outputs_dir = configs.retriever.icl_examples_dir
     os.makedirs(outputs_dir, exist_ok=True)
 
     for split in ["train", "valid", "test"]:
         # Run retrieval
-        relevant_documents = bm25_retriever(
+        relevant_documents = retrieve(
             configs.retriever,
             query_corpus=datasets[split],
             knowledge_corpus=datasets["train"],
@@ -77,7 +79,7 @@ def main(configs: TrainingConfigs):
         with open(
             os.path.join(
                 outputs_dir,
-                f"{split}_in_context_examples.json",
+                f"{split}.json",
             ),
             "w",
         ) as json_file:

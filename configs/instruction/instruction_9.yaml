@@ -1,0 +1,4 @@
+defaults:
+  - base_instruction_config
+
+instruction_template: "{icl_example}Determine if the sentence is true based on the text below: {statement} {evidence}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: "

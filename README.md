@@ -67,6 +67,55 @@ python scripts/train.py experiment=zero_shot/mistral_7b_instruct
 - Assuming Meditron does not perform well in zero-shot manner, we cannot use it in later stages (In-Context Learning) due to its limited context length.
 LLMs may ignore the supplied evidence altogether, and investigation is necessary to understand whether the LLMs predict the same albeit the supplied CTR is different.
 
+### RQ 1.2: Which instruction template works best?
+
+Zero shot performance of the model seems to be less competitive compared to [the runner up of last year's challenge (Flan-T5)](https://aclanthology.org/2023.semeval-1.137/).
+We hypothesised that this may have been caused by the instruction template.
+In RQ 1.1, we used the following sub-optimal template:
+
+```text
+Evidence: primary trial: <primary_evidence_text> | secondary trial: <secondary_evidence_text>
+Statement: <statement_text>
+Answer:
+```
+
+To evaluate this, we experimented with 11 different instruction templates:
+
+<details>
+  <summary>Instruction Templates</summary>
+  <ol>
+    <li>{evidence} Based on the paragraph above can we conclude that {statement}?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>{evidence} Based on that paragraph can we conclude that this sentence is true? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>{evidence} Can we draw the following conclusion? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>{evidence} Does this next sentence follow, given the preceding text? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>{evidence} Can we infer the following? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>Read the following paragraph and determine if the hypothesis is true: {evidence} Hypothesis: {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>Read the text and determine if the sentence is true: {evidence} Sentence: {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>Can we draw the following hypothesis from the context? Context: {evidence} Hypothesis: {statement}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>Determine if the sentence is true based on the text below: {statement} {evidence}\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>{evidence} Question: Does this imply that {statement}?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+    <li>Evidence: {evidence}\nStatement: {statement}\nQuestion: Is the statement a contradiction or an entailment?\nOPTIONS:\n- Contradiction\n- Entailment\nAnswer: </li>
+  </ol>
+</details>
+
+#### Results
+
+Using the same LLM (LLaMA2-7b-chat):
+
+| Instruction | Train Accuracy | Train F1 | Train Precision | Train Recall | Valid Accuracy | Valid F1 | Valid Precision | Valid Recall |
+| ----------- | -------------- | -------- | --------------- | ------------ | -------------- | -------- | --------------- | ------------ |
+| 1           |                |          |                 |              |                |          |                 |              |
+| 2           |                |          |                 |              |                |          |                 |              |
+| 3           |                |          |                 |              |                |          |                 |              |
+| 4           |                |          |                 |              |                |          |                 |              |
+| 5           |                |          |                 |              |                |          |                 |              |
+| 6           |                |          |                 |              |                |          |                 |              |
+| 7           |                |          |                 |              |                |          |                 |              |
+| 8           |                |          |                 |              |                |          |                 |              |
+| 9           |                |          |                 |              |                |          |                 |              |
+| 10          |                |          |                 |              |                |          |                 |              |
+| 11          |                |          |                 |              |                |          |                 |              |
+
 ### RQ 2: Can LLMs augmented with in-context examples perform better than zero-shot LLMs?
 
 #### RQ 2.1: How to choose the best in-context examples?

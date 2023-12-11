@@ -2,5 +2,5 @@
 defaults:
   - override /model: llama2_13b
   - override /data: nli4ct_practice
-  - override /dataloader: causal_lm
+  - override /dataloader: chat
   - override /trainer: zero_shot
