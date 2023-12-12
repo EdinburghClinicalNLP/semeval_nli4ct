@@ -5,7 +5,7 @@ name: MistralLite-7b
 pipeline: LanguageModelPipeline
 configs:
   model_name_or_path: amazon/MistralLite
-  max_seq_len: 4096
+  max_seq_len: 16384
   temperature: 0.001
   top_p: 0
   top_k: 1
