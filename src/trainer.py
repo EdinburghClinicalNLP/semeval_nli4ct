@@ -3,9 +3,11 @@ import os
 
 import hydra
 import pandas as pd
+import torch
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -31,7 +33,6 @@ class Trainer:
 
         if not configs.debug:
             self._setup_run()
-        # self._setup_training()
 
     def _load_dataset(self) -> dict:
         dataloaders = {}
@@ -84,43 +85,6 @@ class Trainer:
             self.wandb_tracker: WandBTracker = self.accelerator.get_tracker("wandb")
         self.accelerator.wait_for_everyone()
 
-    # def _setup_training(self):
-    #     # model
-    #     self.model = AutoModelForCausalLM.from_pretrained(
-    #         self.configs.model.configs.model_name_or_path,
-    #     )
-
-    #     # optimizer
-    #     self.optimizer = get_optimizer(self.configs.optimizer, self.model)
-
-    #     # lr scheduler
-    #     num_training_steps = (
-    #         math.ceil(
-    #             len(self.train_dataloader)
-    #             / self.configs.experiment.gradient_accumulation_steps
-    #         )
-    #         * self.configs.experiment.epochs
-    #     )
-    #     self.lr_scheduler = get_lr_scheduler(
-    #         self.configs.lr_scheduler, self.optimizer, num_training_steps
-    #     )
-
-    #     (
-    #         self.model,
-    #         self.train_dataloader,
-    #         self.valid_dataloader,
-    #         self.test_dataloader,
-    #         self.optimizer,
-    #         self.lr_scheduler,
-    #     ) = self.accelerator.prepare(
-    #         self.model,
-    #         self.train_dataloader,
-    #         self.valid_dataloader,
-    #         self.test_dataloader,
-    #         self.optimizer,
-    #         self.lr_scheduler,
-    #     )
-
     @staticmethod
     def compute_metrics(labels, predictions):
         f1 = f1_score(labels, predictions, average="weighted")
@@ -130,12 +94,92 @@ class Trainer:
 
         return {"accuracy": acc, "precision": prec, "recall": recall, "f1": f1}
 
-    def train(self):
-        for epoch in range(self.configs.trainer.configs.epochs):
-            self.pipeline.model.train()
-            break
+    def _setup_training(self):
+        # optimizer
+        self.optimizer = get_optimizer(self.configs.optimizer, self.pipeline.model)
 
-    def test(self, split: str):
+        # lr scheduler
+        num_training_steps = (
+            math.ceil(
+                len(self.train_dataloader)
+                / self.configs.trainer.configs.gradient_accumulation_steps
+            )
+            * self.configs.trainer.configs.epochs
+        )
+        self.lr_scheduler = get_lr_scheduler(
+            self.configs.lr_scheduler, self.optimizer, num_training_steps
+        )
+
+        (
+            self.pipeline.model,
+            self.dataloaders["train"],
+            self.dataloaders["valid"],
+            self.dataloaders["test"],
+            self.optimizer,
+            self.lr_scheduler,
+        ) = self.accelerator.prepare(
+            self.pipeline.model,
+            self.dataloaders["train"],
+            self.dataloaders["valid"],
+            self.dataloaders["test"],
+            self.optimizer,
+            self.lr_scheduler,
+        )
+
+    def train(self):
+        self._setup_training()
+
+        prev_best_valid_metric = 0
+        for epoch in range(self.configs.trainer.configs.epochs):
+            total_loss = 0
+            for step, batch in enumerate(tqdm(self.dataloaders["train"])):
+                with self.accelerator.accumulate(self.pipeline.model):
+                    self.pipeline.model.train()
+                    outputs = self.pipeline.train(batch, batch["labels"])
+                    loss = F.cross_entropy(
+                        outputs.logits.view(-1, 2),
+                        batch["labels"].view(-1),
+                    )
+
+                    total_loss += loss.detach().float()
+
+                    self.accelerator.backward(loss)
+                    self.optimizer.step()
+                    self.lr_scheduler.step()
+                    self.optimizer.zero_grad()
+
+            train_epoch_loss = total_loss / len(self.dataloaders["train"])
+            train_ppl = torch.exp(train_epoch_loss)
+            self.accelerator.print(f"{epoch=}: {train_ppl=} {train_epoch_loss=}")
+            self.accelerator.log(
+                {
+                    "train/loss": train_epoch_loss,
+                    "train/ppl": train_ppl,
+                },
+                step=epoch,
+            )
+            valid_metrics = self.test("valid", log_metrics=False)
+
+            # Save a checkpoint
+            if valid_metrics["valid/f1"] >= prev_best_valid_metric:
+                prev_best_valid_metric = valid_metrics["valid/f1"]
+                self.accelerator.save_state(
+                    os.path.join(self.output_dir, "best_checkpoint")
+                )
+
+        # Load best checkpoint for test evaluation
+        self.accelerator.load_state(os.path.join(self.output_dir, "best_checkpoint"))
+        self.accelerator.wait_for_everyone()
+
+        _ = self.test("valid", log_metrics=True)
+        _ = self.test("test", log_metrics=True)
+
+        print("Create a WandB artifact from embedding")
+        artifact = wandb.Artifact(self.wandb_run_name, type="model")
+        artifact.add_dir(os.path.join(self.output_dir, "best_checkpoint"))
+        wandb.log_artifact(artifact)
+
+    def test(self, split: str, log_metrics: bool = True):
         print(f"Test on {split}")
 
         predictions_df = pd.DataFrame(
@@ -234,8 +278,10 @@ class Trainer:
             print(metrics)
 
         # Save DataFrame
-        wandb.log(
-            metrics | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
-        )
+        if log_metrics:
+            self.accelerator.log(
+                metrics
+                | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
+            )
 
         return metrics

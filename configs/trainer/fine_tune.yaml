@@ -5,3 +5,7 @@ name: fine_tune
 configs:
   epochs: 10
   gradient_accumulation_steps: 32
+  lora_configs: 
+    r: 8
+    lora_alpha: 16
+    lora_dropout: 0.1
