@@ -185,29 +185,30 @@ class ChatDataset(torch.utils.data.Dataset):
         }
 
     def __getitem__(self, idx):
-        examples = ""
+        icl_examples = []
+        icl_labels = []
         if self.trainer_configs.name in ["one_shot", "two_shot"]:
             for icl_evidence, icl_statement, icl_label in zip(
                 self.data["icl_evidence"][idx],
                 self.data["icl_statement"][idx],
                 self.data["icl_label"][idx],
             ):
-                example = (
-                    self.instruction_template.format(
-                        icl_example="",
-                        evidence=icl_evidence,
-                        statement=icl_statement,
-                    )
-                    + icl_label
+                example = self.instruction_template.format(
+                    icl_example="",
+                    evidence=icl_evidence,
+                    statement=icl_statement,
                 )
-                examples += example + "\n\n"
+                icl_examples += [example]
+                icl_labels += [icl_label]
 
         return {
             "id": self.data["id"][idx],
             "section": self.data["section"][idx],
             "type": self.data["type"][idx],
+            "icl_inputs": icl_examples,
+            "icl_labels": icl_labels,
             "text": self.instruction_template.format(
-                icl_example=examples,
+                icl_example="",
                 evidence=self.data["evidence"][idx],
                 statement=self.data["statement"][idx],
             ),

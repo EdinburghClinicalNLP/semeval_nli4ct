@@ -30,14 +30,32 @@ class ChatModelPipeline:
     def _tokenize_input(self, inputs):
         if "mistral" in self.model_configs.configs.model_name_or_path.lower():
             # Mistral doesn't allow system role
+            prompt = []
+            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
+                for icl_input, icl_label in zip(
+                    inputs["icl_inputs"], inputs["icl_labels"]
+                ):
+                    prompt += [
+                        {"role": "user", "content": icl_input},
+                        {"role": "assistant", "content": icl_label},
+                    ]
+
             prompt = [
-                {"role": "user", "content": self.system_prompt + inputs["text"][0]},
-            ]
-        else:
-            prompt = [
-                {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": inputs["text"][0]},
             ]
+        else:
+            prompt = [{"role": "system", "content": self.system_prompt}]
+
+            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
+                for icl_input, icl_label in zip(
+                    inputs["icl_inputs"], inputs["icl_labels"]
+                ):
+                    prompt += [
+                        {"role": "user", "content": icl_input},
+                        {"role": "assistant", "content": icl_label},
+                    ]
+
+            prompt += [{"role": "user", "content": inputs["text"][0]}]
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
@@ -60,14 +78,11 @@ class ChatModelPipeline:
         model_input = self._tokenize_input(inputs)
 
         # Tokenize labels
-        labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")["input_ids"].to(self.model.device)
+        labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")[
+            "input_ids"
+        ].to(self.model.device)
 
         # Concatenate the input and labels to form the Language Model labels
-        # labels = (
-        #     model_input
-        #     + labels
-        #     + [self.tokenizer.eos_token_id]
-        # )
         eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]]).to(self.model.device)
         labels = torch.cat((model_input, labels, eos_tensor), dim=1)
 
@@ -82,7 +97,9 @@ class ChatModelPipeline:
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
         model_input = self._tokenize_input(inputs)
         # Limit generation length
-        max_new_tokens = min(256, self.max_seq_len - model_input.size(1))
+        max_new_tokens = 8
+        if self.max_seq_len - model_input.size(1) > 4:
+            max_new_tokens = min(8, self.max_seq_len - model_input.size(1))
 
         with torch.inference_mode():
             output = self.model.generate(
@@ -109,14 +126,14 @@ class ChatModelPipeline:
     @staticmethod
     def postprocess_prediction(answer):
         """
-        If the output is structured correctly, the first word will be the answer.
-        If not, take note that it cannot be parsed correctly.
+        Take the last occurence between contradiction and entailment
         """
-        final_answer = re.split("[\.\s\:\n]+", answer.lower().strip())[0].strip()
+        stripped_answer = answer.lower().strip()
 
-        if final_answer in ["contradiction", "entailment"]:
-            # Return the first word
-            return final_answer
+        contradiction_loc = stripped_answer.rfind("contradiction")
+        entailment_loc = stripped_answer.rfind("entailment")
+
+        if entailment_loc > contradiction_loc:
+            return "entailment"
         else:
-            # Return original answer if the string is empty
-            return answer
+            return "contradiction"
