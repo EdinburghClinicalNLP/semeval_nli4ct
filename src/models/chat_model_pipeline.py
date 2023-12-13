@@ -7,7 +7,6 @@ from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
 from src.configs import ModelConfigs
-from src.factories import get_peft_config
 
 
 class ChatModelPipeline:
@@ -49,7 +48,7 @@ class ChatModelPipeline:
     def setup_finetuning(self, peft_configs: dict):
         self.peft_config = LoraConfig(
             **peft_configs,
-            task_type=TaskType.CausalLM,
+            task_type=TaskType.CAUSAL_LM,
         )
         self.model = get_peft_model(self.model, self.peft_config)
         self.model.print_trainable_parameters()
@@ -61,17 +60,19 @@ class ChatModelPipeline:
         model_input = self._tokenize_input(inputs)
 
         # Tokenize labels
-        labels = self.tokenizer(labels, add_special_tokens=False).to(self.model.device)
+        labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")["input_ids"].to(self.model.device)
 
         # Concatenate the input and labels to form the Language Model labels
-        model_input["labels"] = (
-            model_input["input_ids"]
-            + labels["input_ids"]
-            + [self.tokenizer.eos_token_id]
-        )
+        # labels = (
+        #     model_input
+        #     + labels
+        #     + [self.tokenizer.eos_token_id]
+        # )
+        eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]]).to(self.model.device)
+        labels = torch.cat((model_input, labels, eos_tensor), dim=1)
 
         # Forward pass
-        outputs = self.model(**model_input)
+        outputs = self.model(model_input, labels=labels)
 
         return outputs
 

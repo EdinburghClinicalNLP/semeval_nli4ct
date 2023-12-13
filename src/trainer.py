@@ -95,13 +95,16 @@ class Trainer:
         return {"accuracy": acc, "precision": prec, "recall": recall, "f1": f1}
 
     def _setup_training(self):
+        # Setup PEFT
+        self.pipeline.setup_finetuning(self.configs.trainer.configs.lora_configs)
+
         # optimizer
         self.optimizer = get_optimizer(self.configs.optimizer, self.pipeline.model)
 
         # lr scheduler
         num_training_steps = (
             math.ceil(
-                len(self.train_dataloader)
+                len(self.dataloaders["train"])
                 / self.configs.trainer.configs.gradient_accumulation_steps
             )
             * self.configs.trainer.configs.epochs
