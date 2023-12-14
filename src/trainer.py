@@ -130,57 +130,60 @@ class Trainer:
         )
 
     def train(self):
-        self._setup_training()
+        if self.configs.trainer.name == "fine_tune":
+            self._setup_training()
 
-        prev_best_valid_metric = 0
-        for epoch in range(self.configs.trainer.configs.epochs):
-            total_loss = 0
-            for step, batch in enumerate(tqdm(self.dataloaders["train"])):
-                with self.accelerator.accumulate(self.pipeline.model):
-                    self.pipeline.model.train()
-                    outputs = self.pipeline.train(batch, batch["labels"])
-                    loss = F.cross_entropy(
-                        outputs.logits.view(-1, 2),
-                        batch["labels"].view(-1),
+            prev_best_valid_metric = 0
+            for epoch in range(self.configs.trainer.configs.epochs):
+                total_loss = 0
+                for step, batch in enumerate(tqdm(self.dataloaders["train"])):
+                    with self.accelerator.accumulate(self.pipeline.model):
+                        self.pipeline.model.train()
+                        outputs = self.pipeline.train(batch, batch["labels"])
+                        loss = F.cross_entropy(
+                            outputs.logits.view(-1, 2),
+                            batch["labels"].view(-1),
+                        )
+
+                        total_loss += loss.detach().float()
+
+                        self.accelerator.backward(loss)
+                        self.optimizer.step()
+                        self.lr_scheduler.step()
+                        self.optimizer.zero_grad()
+
+                train_epoch_loss = total_loss / len(self.dataloaders["train"])
+                train_ppl = torch.exp(train_epoch_loss)
+                self.accelerator.print(f"{epoch=}: {train_ppl=} {train_epoch_loss=}")
+                self.accelerator.log(
+                    {
+                        "train/loss": train_epoch_loss,
+                        "train/ppl": train_ppl,
+                    },
+                    step=epoch,
+                )
+                valid_metrics = self.test("valid", log_metrics=False)
+
+                # Save a checkpoint
+                if valid_metrics["valid/f1"] >= prev_best_valid_metric:
+                    prev_best_valid_metric = valid_metrics["valid/f1"]
+                    self.accelerator.save_state(
+                        os.path.join(self.output_dir, "best_checkpoint")
                     )
 
-                    total_loss += loss.detach().float()
-
-                    self.accelerator.backward(loss)
-                    self.optimizer.step()
-                    self.lr_scheduler.step()
-                    self.optimizer.zero_grad()
-
-            train_epoch_loss = total_loss / len(self.dataloaders["train"])
-            train_ppl = torch.exp(train_epoch_loss)
-            self.accelerator.print(f"{epoch=}: {train_ppl=} {train_epoch_loss=}")
-            self.accelerator.log(
-                {
-                    "train/loss": train_epoch_loss,
-                    "train/ppl": train_ppl,
-                },
-                step=epoch,
+            # Load best checkpoint for test evaluation
+            self.accelerator.load_state(
+                os.path.join(self.output_dir, "best_checkpoint")
             )
-            valid_metrics = self.test("valid", log_metrics=False)
+            self.accelerator.wait_for_everyone()
 
-            # Save a checkpoint
-            if valid_metrics["valid/f1"] >= prev_best_valid_metric:
-                prev_best_valid_metric = valid_metrics["valid/f1"]
-                self.accelerator.save_state(
-                    os.path.join(self.output_dir, "best_checkpoint")
-                )
+            _ = self.test("valid", log_metrics=True)
+            _ = self.test("test", log_metrics=True)
 
-        # Load best checkpoint for test evaluation
-        self.accelerator.load_state(os.path.join(self.output_dir, "best_checkpoint"))
-        self.accelerator.wait_for_everyone()
-
-        _ = self.test("valid", log_metrics=True)
-        _ = self.test("test", log_metrics=True)
-
-        print("Create a WandB artifact from embedding")
-        artifact = wandb.Artifact(self.wandb_run_name, type="model")
-        artifact.add_dir(os.path.join(self.output_dir, "best_checkpoint"))
-        wandb.log_artifact(artifact)
+            print("Create a WandB artifact from embedding")
+            artifact = wandb.Artifact(self.wandb_run_name, type="model")
+            artifact.add_dir(os.path.join(self.output_dir, "best_checkpoint"))
+            wandb.log_artifact(artifact)
 
     def test(self, split: str, log_metrics: bool = True):
         print(f"Test on {split}")
