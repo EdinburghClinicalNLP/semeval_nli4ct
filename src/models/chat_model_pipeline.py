@@ -93,22 +93,6 @@ class ChatModelPipeline:
         attention_mask = attention_mask.to(self.model.device)
         labels = labels.to(self.model.device)
 
-        print(model_input.size())
-        print(attention_mask.size())
-        print(labels.size())
-
-        # # Tokenize labels
-        # labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")[
-        #     "input_ids"
-        # ].to(self.model.device)
-
-        # # Concatenate the input and labels to form the Language Model labels
-        # eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]]).to(self.model.device)
-        # labels = torch.cat((model_input, labels, eos_tensor), dim=1)
-
-        # print("model_input.size(): ", model_input.size())
-        # print("labels.size(): ", labels.size())
-
         # Forward pass
         outputs = self.model(
             input_ids=model_input, attention_mask=attention_mask, labels=labels
