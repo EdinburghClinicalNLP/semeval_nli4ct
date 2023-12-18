@@ -23,12 +23,14 @@ class ChatModelPipeline:
             model_configs.configs.model_name_or_path
         )
 
-        self.system_prompt = model_configs.configs.system_prompt
+        self.system_prompt = None
+        if "llama" in self.model_configs.configs.model_name_or_path.lower():
+            self.system_prompt = model_configs.configs.system_prompt
 
         self.max_seq_len = model_configs.configs.max_seq_len
 
     def _tokenize_input(self, inputs):
-        if "mistral" in self.model_configs.configs.model_name_or_path.lower():
+        if self.system_prompt:
             # Mistral doesn't allow system role
             prompt = []
             if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
@@ -59,7 +61,7 @@ class ChatModelPipeline:
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
-        ).to(self.model.device)
+        )
 
         return model_input
 
@@ -75,19 +77,42 @@ class ChatModelPipeline:
         self.model.train()
 
         # Tokenize the input
-        model_input = self._tokenize_input(inputs)
+        tokenized_input = self._tokenize_input(inputs)
+        labels = self.tokenizer(labels, return_tensors="pt", add_special_tokens=False)
 
         # Tokenize labels
-        labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")[
-            "input_ids"
-        ].to(self.model.device)
+        eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]])
+        label_input_ids = torch.cat((labels["input_ids"], eos_tensor), dim=1)
+        model_input = torch.cat((tokenized_input, label_input_ids), dim=1)
+        labels_masked = torch.cat(
+            (torch.tensor([[-100] * tokenized_input.size(1)]), label_input_ids), dim=1
+        )
+        attention_mask = torch.tensor([[1] * model_input.size(1)])
 
-        # Concatenate the input and labels to form the Language Model labels
-        eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]]).to(self.model.device)
-        labels = torch.cat((model_input, labels, eos_tensor), dim=1)
+        model_input = model_input.to(self.model.device)
+        attention_mask = attention_mask.to(self.model.device)
+        labels_masked = labels_masked.to(self.model.device)
+
+        print(model_input.size())
+        print(attention_mask.size())
+        print(labels_masked.size())
+
+        # # Tokenize labels
+        # labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")[
+        #     "input_ids"
+        # ].to(self.model.device)
+
+        # # Concatenate the input and labels to form the Language Model labels
+        # eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]]).to(self.model.device)
+        # labels = torch.cat((model_input, labels, eos_tensor), dim=1)
+
+        # print("model_input.size(): ", model_input.size())
+        # print("labels.size(): ", labels.size())
 
         # Forward pass
-        outputs = self.model(model_input, labels=labels)
+        outputs = self.model(
+            input_ids=model_input, attention_mask=attention_mask, labels=labels
+        )
 
         return outputs
 
@@ -95,7 +120,7 @@ class ChatModelPipeline:
         self,
         inputs,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
-        model_input = self._tokenize_input(inputs)
+        model_input = self._tokenize_input(inputs).to(self.model.device)
         # Limit generation length
         max_new_tokens = 8
         if self.max_seq_len - model_input.size(1) > 4:

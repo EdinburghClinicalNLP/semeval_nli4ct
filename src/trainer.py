@@ -140,10 +140,7 @@ class Trainer:
                     with self.accelerator.accumulate(self.pipeline.model):
                         self.pipeline.model.train()
                         outputs = self.pipeline.train(batch, batch["labels"])
-                        loss = F.cross_entropy(
-                            outputs.logits.view(-1, 2),
-                            batch["labels"].view(-1),
-                        )
+                        loss = outputs.loss
 
                         total_loss += loss.detach().float()
 
