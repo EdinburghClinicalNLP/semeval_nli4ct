@@ -14,10 +14,9 @@ class ChatModelPipeline:
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
             model_configs.configs.model_name_or_path,
-            torch_dtype="auto",
+            torch_dtype=torch.bfloat16,
             device_map="auto",
             low_cpu_mem_usage=True,
-            load_in_4bit=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_configs.configs.model_name_or_path
@@ -100,9 +99,15 @@ class ChatModelPipeline:
         labels = labels.to(self.model.device)
 
         # Forward pass
-        outputs = self.model(
-            input_ids=model_input, attention_mask=attention_mask, labels=labels
-        )
+        try:
+            outputs = self.model(
+                input_ids=model_input, attention_mask=attention_mask, labels=labels
+            )
+        except torch.cuda.OutOfMemoryError:
+            print(f"model_input.size(): {model_input.size()}")
+            print(f"attention_mask.size(): {attention_mask.size()}")
+            print(f"labels.size(): {labels.size()}")
+            raise ValueError("Out of memory error")
 
         return outputs
 
