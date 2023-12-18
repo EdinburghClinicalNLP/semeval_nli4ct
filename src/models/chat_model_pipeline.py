@@ -89,6 +89,12 @@ class ChatModelPipeline:
         )
         attention_mask = torch.tensor([[1] * model_input.size(1)])
 
+        # Truncate to max length
+        model_input = model_input[:, : self.max_seq_len]
+        attention_mask = attention_mask[:, : self.max_seq_len]
+        labels = labels[:, : self.max_seq_len]
+
+        # Move to device
         model_input = model_input.to(self.model.device)
         attention_mask = attention_mask.to(self.model.device)
         labels = labels.to(self.model.device)
