@@ -84,18 +84,18 @@ class ChatModelPipeline:
         eos_tensor = torch.tensor([[self.tokenizer.eos_token_id]])
         label_input_ids = torch.cat((labels["input_ids"], eos_tensor), dim=1)
         model_input = torch.cat((tokenized_input, label_input_ids), dim=1)
-        labels_masked = torch.cat(
+        labels = torch.cat(
             (torch.tensor([[-100] * tokenized_input.size(1)]), label_input_ids), dim=1
         )
         attention_mask = torch.tensor([[1] * model_input.size(1)])
 
         model_input = model_input.to(self.model.device)
         attention_mask = attention_mask.to(self.model.device)
-        labels_masked = labels_masked.to(self.model.device)
+        labels = labels.to(self.model.device)
 
         print(model_input.size())
         print(attention_mask.size())
-        print(labels_masked.size())
+        print(labels.size())
 
         # # Tokenize labels
         # labels = self.tokenizer(labels, add_special_tokens=False, return_tensors="pt")[
