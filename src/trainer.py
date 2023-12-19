@@ -139,15 +139,19 @@ class Trainer:
                 for step, batch in enumerate(tqdm(self.dataloaders["train"])):
                     with self.accelerator.accumulate(self.pipeline.model):
                         self.pipeline.model.train()
-                        outputs = self.pipeline.train(batch, batch["labels"])
-                        loss = outputs.loss
+                        try:
+                            outputs = self.pipeline.train(batch, batch["labels"])
+                            loss = outputs.loss
 
-                        total_loss += loss.detach().float()
+                            total_loss += loss.detach().float()
 
-                        self.accelerator.backward(loss)
-                        self.optimizer.step()
-                        self.lr_scheduler.step()
-                        self.optimizer.zero_grad()
+                            self.accelerator.backward(loss)
+                            self.optimizer.step()
+                            self.lr_scheduler.step()
+                            self.optimizer.zero_grad()
+                        except torch.cuda.OutOfMemoryError as e:
+                            print(f"batch: {batch}")
+                            raise ValueError(e)
 
                 train_epoch_loss = total_loss / len(self.dataloaders["train"])
                 train_ppl = torch.exp(train_epoch_loss)

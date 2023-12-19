@@ -99,15 +99,9 @@ class ChatModelPipeline:
         labels = labels.to(self.model.device)
 
         # Forward pass
-        try:
-            outputs = self.model(
-                input_ids=model_input, attention_mask=attention_mask, labels=labels
-            )
-        except torch.cuda.OutOfMemoryError:
-            print(f"model_input.size(): {model_input.size()}")
-            print(f"attention_mask.size(): {attention_mask.size()}")
-            print(f"labels.size(): {labels.size()}")
-            raise ValueError("Out of memory error")
+        outputs = self.model(
+            input_ids=model_input, attention_mask=attention_mask, labels=labels
+        )
 
         return outputs
 
