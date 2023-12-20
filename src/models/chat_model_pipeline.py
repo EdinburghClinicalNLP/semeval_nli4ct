@@ -117,7 +117,7 @@ class ChatModelPipeline:
 
         with torch.inference_mode():
             output = self.model.generate(
-                model_input,
+                input_ids=model_input,
                 temperature=self.model_configs.configs.temperature,
                 top_p=self.model_configs.configs.top_p,
                 top_k=self.model_configs.configs.top_k,
