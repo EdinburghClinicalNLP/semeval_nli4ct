@@ -2,7 +2,7 @@ defaults:
   - base_model_config
 
 name: MistralLite-7b
-pipeline: LanguageModelPipeline
+pipeline: ChatModelPipeline
 configs:
   model_name_or_path: amazon/MistralLite
   max_seq_len: 16384
