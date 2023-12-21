@@ -155,15 +155,19 @@ class Trainer:
 
                 train_epoch_loss = total_loss / len(self.dataloaders["train"])
                 train_ppl = torch.exp(train_epoch_loss)
+                train_metrics = self.test("train", log_metrics=False)
+                valid_metrics = self.test("valid", log_metrics=False)
+
                 self.accelerator.print(f"{epoch=}: {train_ppl=} {train_epoch_loss=}")
                 self.accelerator.log(
                     {
                         "train/loss": train_epoch_loss,
                         "train/ppl": train_ppl,
-                    },
+                    }
+                    | train_metrics
+                    | valid_metrics,
                     step=epoch,
                 )
-                valid_metrics = self.test("valid", log_metrics=False)
 
                 # Save a checkpoint
                 if valid_metrics["valid/f1"] >= prev_best_valid_metric:

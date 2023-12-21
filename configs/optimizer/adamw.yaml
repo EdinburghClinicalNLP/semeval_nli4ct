@@ -4,4 +4,4 @@ defaults:
 name: AdamW
 configs:
   lr: 1e-3
-  weight_decay: 0
+  weight_decay: 0.01
