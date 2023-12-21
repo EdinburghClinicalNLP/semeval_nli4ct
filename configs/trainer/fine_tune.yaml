@@ -3,10 +3,10 @@ defaults:
 
 name: fine_tune
 configs:
-  epochs: 10
+  epochs: 5
   gradient_accumulation_steps: 32
   lora_configs:
-    r: 8
-    lora_alpha: 16
-    lora_dropout: 0.1
+    r: 16
+    lora_alpha: 32
+    lora_dropout: 0.2
     target_modules: ["k_proj", "q_proj", "v_proj"]
