@@ -2,10 +2,10 @@ defaults:
   - base_model_config
 
 name: Meditron-7b
-pipeline: LanguageModelPipeline
+pipeline: ChatModelPipeline
 configs:
   model_name_or_path: epfl-llm/meditron-7b
-  max_seq_len: 4096
+  max_seq_len: 2048
   temperature: 0.001
   top_p: 0
   top_k: 1
