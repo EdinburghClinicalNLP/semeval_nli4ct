@@ -41,8 +41,8 @@ class ChatModelPipeline:
                     inputs["icl_inputs"], inputs["icl_labels"]
                 ):
                     prompt += [
-                        {"role": "user", "content": icl_input},
-                        {"role": "assistant", "content": icl_label},
+                        {"role": "user", "content": icl_input[0]},
+                        {"role": "assistant", "content": icl_label[0]},
                     ]
 
             prompt += [{"role": "user", "content": inputs["text"][0]}]
@@ -54,8 +54,8 @@ class ChatModelPipeline:
                     inputs["icl_inputs"], inputs["icl_labels"]
                 ):
                     prompt += [
-                        {"role": "user", "content": icl_input},
-                        {"role": "assistant", "content": icl_label},
+                        {"role": "user", "content": icl_input[0]},
+                        {"role": "assistant", "content": icl_label[0]},
                     ]
 
             prompt = [
