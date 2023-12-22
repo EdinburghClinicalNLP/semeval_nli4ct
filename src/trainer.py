@@ -140,7 +140,11 @@ class Trainer:
                     with self.accelerator.accumulate(self.pipeline.model):
                         self.pipeline.model.train()
                         try:
-                            outputs = self.pipeline.train(batch, batch["labels"])
+                            outputs = self.pipeline.train(
+                                batch,
+                                batch["labels"],
+                                max_train_seq_len=self.configs.trainer.max_train_seq_len,
+                            )
                             loss = outputs.loss
 
                             total_loss += loss.detach().float()

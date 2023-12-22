@@ -28,10 +28,6 @@ class ChatModelPipeline:
 
         self.max_seq_len = model_configs.configs.max_seq_len
 
-        # Limit the max sequence length for training to
-        # a half of the generation sequence length
-        self.train_max_seq_len = max(self.max_seq_len // 2, 2048)
-
     def _tokenize_input(self, inputs):
         if self.system_prompt:
             prompt = [{"role": "system", "content": self.system_prompt}]
@@ -76,7 +72,10 @@ class ChatModelPipeline:
         self.model = get_peft_model(self.model, self.peft_config)
         self.model.print_trainable_parameters()
 
-    def train(self, inputs, labels):
+    def train(self, inputs, labels, max_train_seq_len=None):
+        if max_train_seq_len is None:
+            max_train_seq_len = self.max_seq_len // 2
+
         self.model.train()
 
         # Tokenize the input
@@ -93,9 +92,9 @@ class ChatModelPipeline:
         attention_mask = torch.tensor([[1] * model_input.size(1)])
 
         # Truncate left side to max length
-        model_input = model_input[:, -self.train_max_seq_len :]
-        attention_mask = attention_mask[:, -self.train_max_seq_len :]
-        labels = labels[:, -self.train_max_seq_len :]
+        model_input = model_input[:, -max_train_seq_len:]
+        attention_mask = attention_mask[:, -max_train_seq_len:]
+        labels = labels[:, -max_train_seq_len:]
 
         # Move to device
         model_input = model_input.to(self.model.device)
