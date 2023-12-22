@@ -143,7 +143,7 @@ class Trainer:
                             outputs = self.pipeline.train(
                                 batch,
                                 batch["labels"],
-                                max_train_seq_len=self.configs.trainer.max_train_seq_len,
+                                max_train_seq_len=self.configs.trainer.configs.max_train_seq_len,
                             )
                             loss = outputs.loss
 
