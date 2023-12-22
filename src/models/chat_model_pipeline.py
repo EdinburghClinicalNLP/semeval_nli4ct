@@ -29,34 +29,18 @@ class ChatModelPipeline:
         self.max_seq_len = model_configs.configs.max_seq_len
 
     def _tokenize_input(self, inputs):
+        prompt = []
         if self.system_prompt:
-            prompt = [{"role": "system", "content": self.system_prompt}]
+            prompt += [{"role": "system", "content": self.system_prompt}]
 
-            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
-                for icl_input, icl_label in zip(
-                    inputs["icl_inputs"], inputs["icl_labels"]
-                ):
-                    prompt += [
-                        {"role": "user", "content": icl_input[0]},
-                        {"role": "assistant", "content": icl_label[0]},
-                    ]
+        if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
+            for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
+                prompt += [
+                    {"role": "user", "content": icl_input[0]},
+                    {"role": "assistant", "content": icl_label[0]},
+                ]
 
-            prompt += [{"role": "user", "content": inputs["text"][0]}]
-        else:
-            # Mistral doesn't allow system role
-            prompt = []
-            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
-                for icl_input, icl_label in zip(
-                    inputs["icl_inputs"], inputs["icl_labels"]
-                ):
-                    prompt += [
-                        {"role": "user", "content": icl_input[0]},
-                        {"role": "assistant", "content": icl_label[0]},
-                    ]
-
-            prompt = [
-                {"role": "user", "content": inputs["text"][0]},
-            ]
+        prompt += [{"role": "user", "content": inputs["text"][0]}]
 
         model_input = self.tokenizer.apply_chat_template(
             prompt, return_tensors="pt", max_length=self.max_seq_len
