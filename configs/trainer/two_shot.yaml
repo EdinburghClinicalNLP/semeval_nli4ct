@@ -1,8 +1,0 @@
-defaults:
-  - base_trainer_config
-
-name: two_shot
-configs:
-  epochs: 0
-  gradient_accumulation_steps: 0
-  num_in_context_examples: 2

@@ -1,0 +1,9 @@
+defaults:
+  - base_trainer_config
+
+name: icl_4_shot
+configs:
+  epochs: 0
+  gradient_accumulation_steps: 0
+  query_corpus_filename: data/train_2023.json
+  num_in_context_examples: 4

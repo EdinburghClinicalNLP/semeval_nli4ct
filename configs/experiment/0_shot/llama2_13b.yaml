@@ -1,0 +1,6 @@
+# @package _global_
+defaults:
+  - override /model: llama2_13b
+  - override /data: nli4ct_practice
+  - override /dataloader: chat
+  - override /trainer: 0_shot
