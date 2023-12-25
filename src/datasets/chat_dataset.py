@@ -32,9 +32,11 @@ class ChatDataset(torch.utils.data.Dataset):
         )
 
         # Prepare ICL examples for one-shot and two-shot learning
-        if self.trainer_configs.name in ["one_shot", "two_shot"]:
+        if self.trainer_configs.name.startswith("icl_"):
             # Query corpus is the training data
-            self.query_corpus = pd.read_json(self.train_data_filename)
+            self.query_corpus = pd.read_json(
+                self.trainer_configs.configs.query_corpus_filename
+            )
             self.query_corpus = self.query_corpus.transpose()
             self.icl_examples = pd.read_json(
                 os.path.join(
@@ -67,11 +69,31 @@ class ChatDataset(torch.utils.data.Dataset):
                 selected_icl_examples += [all_icl_examples["contradictions"][0]["id"]]
             else:
                 selected_icl_examples += [all_icl_examples["entailments"][0]["id"]]
-        elif self.num_in_context_examples == 2:
-            # If two-shot, choose the highest of both the contradiction and entailment examples
-            selected_icl_examples += [
-                all_icl_examples["contradictions"][0]["id"],
-                all_icl_examples["entailments"][0]["id"],
+        elif self.num_in_context_examples >= 2:
+            # If two-shot or higher even numbers,
+            # choose the top-k/2 of both the contradiction and entailment examples
+            top_k_contradictions = [
+                (example["id"], example["score"])
+                for example in all_icl_examples["contradictions"][
+                    : int(self.num_in_context_examples / 2)
+                ]
+            ]
+            top_k_entailments = [
+                (example["id"], example["score"])
+                for example in all_icl_examples["entailments"][
+                    : int(self.num_in_context_examples / 2)
+                ]
+            ]
+
+            selected_icl_examples += top_k_contradictions
+            selected_icl_examples += top_k_entailments
+
+            # sorted by their scores, highest to lowest. Take only the ids
+            selected_icl_examples = [
+                example[0]
+                for example in sorted(
+                    selected_icl_examples, key=lambda x: x[1], reverse=True
+                )
             ]
 
         return selected_icl_examples
@@ -82,6 +104,8 @@ class ChatDataset(torch.utils.data.Dataset):
         claim_type,
         primary_cts_filename,
         secondary_cts_filename=None,
+        primary_evidence_ids: List[int] = None,
+        secondary_evidence_ids: List[int] = None,
     ):
         # Generate evidence texts for each claim.
         file_name = os.path.join(self.claims_dir, primary_cts_filename + ".json")
@@ -90,7 +114,13 @@ class ChatDataset(torch.utils.data.Dataset):
         with open(file_name, "r") as f:
             data = json.load(f)
             evidence += "primary trial: "
-            evidence += " ".join(data[claim_section])
+            if primary_evidence_ids:
+                primary_evidences = []
+                for primary_evidence_id in primary_evidence_ids:
+                    primary_evidences += [data[claim_section][primary_evidence_id]]
+                evidence += " ".join(primary_evidences)
+            else:
+                evidence += " ".join(data[claim_section])
 
         # If it is a comparative claim, also add evidence sentences from the 2nd trial.
         if claim_type == "Comparison":
@@ -102,6 +132,15 @@ class ChatDataset(torch.utils.data.Dataset):
                 data = json.load(f)
                 evidence += " | secondary trial: "
                 evidence += " ".join(data[claim_section])
+                if secondary_evidence_ids:
+                    secondary_evidences = []
+                    for secondary_evidence_id in secondary_evidence_ids:
+                        secondary_evidences += [
+                            data[claim_section][secondary_evidence_id]
+                        ]
+                    evidence += " ".join(secondary_evidences)
+                else:
+                    evidence += " ".join(data[claim_section])
 
         return evidence
 
@@ -140,7 +179,7 @@ class ChatDataset(torch.utils.data.Dataset):
 
         for claim_id, statement in enumerate(claims):
             # Generate ICL examples
-            if self.trainer_configs.name in ["one_shot", "two_shot"]:
+            if self.trainer_configs.name.startswith("icl_"):
                 icl_example_ids = self.generate_icl_examples(statement_ids[claim_id])
                 icl_evidences = []
                 icl_statements = []
@@ -153,6 +192,12 @@ class ChatDataset(torch.utils.data.Dataset):
                             icl_example["Type"],
                             icl_example["Primary_id"],
                             icl_example["Secondary_id"],
+                            icl_example["Primary_evidence_index"]
+                            if "Primary_evidence_index" in icl_example
+                            else None,
+                            icl_example["Secondary_evidence_index"]
+                            if "Secondary_evidence_index" in icl_example
+                            else None,
                         )
                     ]
                     icl_statements += [icl_example["Statement"]]
@@ -187,7 +232,7 @@ class ChatDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         icl_examples = []
         icl_labels = []
-        if self.trainer_configs.name in ["one_shot", "two_shot"]:
+        if self.trainer_configs.name.startswith("icl_"):
             for icl_evidence, icl_statement, icl_label in zip(
                 self.data["icl_evidence"][idx],
                 self.data["icl_statement"][idx],

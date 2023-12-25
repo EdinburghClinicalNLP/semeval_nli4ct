@@ -65,7 +65,7 @@ class Trainer:
             self.configs.model.name,
             self.hydra_cfg.runtime.choices.instruction,
         ]
-        if self.configs.trainer.name in ["one_shot", "two_shot"]:
+        if self.configs.trainer.name.startswith("icl_"):
             wandb_run_name += [self.configs.retriever.icl_examples_dir.split("/")[-1]]
         self.wandb_run_name = "__".join(wandb_run_name)
         print(self.wandb_run_name)
