@@ -46,7 +46,30 @@ class ChatModelPipeline:
             prompt, return_tensors="pt", max_length=self.max_seq_len
         )
 
-        return model_input
+        return [model_input]
+
+    def _tokenize_input_late_fusion(self, inputs):
+        model_inputs = []
+        for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
+            prompt = []
+            if self.system_prompt:
+                prompt += [{"role": "system", "content": self.system_prompt}]
+
+            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
+                prompt += [
+                    {"role": "user", "content": icl_input[0]},
+                    {"role": "assistant", "content": icl_label[0]},
+                ]
+
+            prompt += [{"role": "user", "content": inputs["text"][0]}]
+
+            model_input = self.tokenizer.apply_chat_template(
+                prompt, return_tensors="pt", max_length=self.max_seq_len
+            )
+
+            model_inputs += [model_input]
+
+        return model_inputs
 
     def setup_finetuning(self, peft_configs: dict):
         self.peft_config = LoraConfig(
@@ -63,7 +86,7 @@ class ChatModelPipeline:
         self.model.train()
 
         # Tokenize the input
-        tokenized_input = self._tokenize_input(inputs)
+        tokenized_input = self._tokenize_input(inputs)[0]
         labels = self.tokenizer(labels, return_tensors="pt", add_special_tokens=False)
 
         # Tokenize labels
@@ -95,33 +118,56 @@ class ChatModelPipeline:
     def generate(
         self,
         inputs,
+        fusion_strategy,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
-        model_input = self._tokenize_input(inputs).to(self.model.device)
-        # Limit generation length
-        max_new_tokens = 8
-        if self.max_seq_len - model_input.size(1) > 4:
-            max_new_tokens = min(8, self.max_seq_len - model_input.size(1))
+        if fusion_strategy == "late":
+            model_inputs = self._tokenize_input_late_fusion(inputs)
+        else:
+            model_inputs = self._tokenize_input(inputs)
 
-        with torch.inference_mode():
-            output = self.model.generate(
-                input_ids=model_input,
-                temperature=self.model_configs.configs.temperature,
-                top_p=self.model_configs.configs.top_p,
-                top_k=self.model_configs.configs.top_k,
-                repetition_penalty=self.model_configs.configs.repetition_penalty,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id,
-                num_return_sequences=1,
-            )
-            decoded_text = self.tokenizer.decode(
-                output[0, model_input.size(1) :], skip_special_tokens=True
-            )
+        # Limit generation length
+        max_new_tokens = []
+        for model_input in model_inputs:
+            if self.max_seq_len - model_input.size(1) > 4:
+                max_new_tokens += [min(8, self.max_seq_len - model_input.size(1))]
+            else:
+                max_new_tokens += [8]
+
+        decoded_texts = []
+        for model_input in model_inputs:
+            with torch.inference_mode():
+                model_input = model_input.to(self.model.device)
+                output = self.model.generate(
+                    input_ids=model_input,
+                    temperature=self.model_configs.configs.temperature,
+                    top_p=self.model_configs.configs.top_p,
+                    top_k=self.model_configs.configs.top_k,
+                    repetition_penalty=self.model_configs.configs.repetition_penalty,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    num_return_sequences=1,
+                )
+                decoded_text = self.tokenizer.decode(
+                    output[0, model_input.size(1) :], skip_special_tokens=True
+                )
+                decoded_texts += [decoded_text]
+
+        # Postprocess predictions
+        if fusion_strategy == "late":
+            predictions = [
+                self.postprocess_prediction(decoded_text)
+                for decoded_text in decoded_texts
+            ]
+            prediction = max(set(predictions), key=predictions.count)
+        else:
+            prediction = self.postprocess_prediction(decoded_texts[0])
 
         return {
-            "decoded_text": decoded_text,
-            "input_length": model_input.size(1),
+            "decoded_text": decoded_texts,
+            "input_length": [model_input.size(1) for model_input in model_inputs],
             "max_new_tokens": max_new_tokens,
+            "prediction": prediction,
         }
 
     @staticmethod

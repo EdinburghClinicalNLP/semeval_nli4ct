@@ -221,9 +221,8 @@ class Trainer:
                     for label in batch["labels"]
                 ]
             try:
-                prediction = self.pipeline.generate(batch)
-                postprocessed_prediction = self.pipeline.postprocess_prediction(
-                    prediction["decoded_text"]
+                prediction = self.pipeline.generate(
+                    batch, fusion_strategy=self.configs.trainer.configs.fusion_strategy
                 )
             except Exception as exc:
                 print(f"Failed to predict: {batch}")
@@ -233,7 +232,6 @@ class Trainer:
                     "max_new_tokens": None,
                     "decoded_text": None,
                 }
-                postprocessed_prediction = None
 
             batch_df = pd.DataFrame(
                 {
@@ -244,7 +242,7 @@ class Trainer:
                     "input_length": [prediction["input_length"]],
                     "max_new_tokens": [prediction["max_new_tokens"]],
                     "labels": postprocessed_label,
-                    "predictions": [postprocessed_prediction],
+                    "predictions": [prediction["prediction"]],
                     "original_predictions": [prediction["decoded_text"]],
                 }
             )

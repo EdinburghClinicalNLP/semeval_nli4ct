@@ -1,10 +1,10 @@
 defaults:
   - base_trainer_config
 
-name: icl_6_shot
+name: icl_8_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
   query_corpus_filename: data/train_2023.json
-  num_in_context_examples: 6
-  fusion_strategy: early
+  num_in_context_examples: 8
+  fusion_strategy: late
