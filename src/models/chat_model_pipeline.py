@@ -151,6 +151,7 @@ class ChatModelPipeline:
                 decoded_text = self.tokenizer.decode(
                     output[0, model_input.size(1) :], skip_special_tokens=True
                 )
+                print(decoded_text)
                 decoded_texts += [decoded_text]
 
         # Postprocess predictions
@@ -159,6 +160,7 @@ class ChatModelPipeline:
                 self.postprocess_prediction(decoded_text)
                 for decoded_text in decoded_texts
             ]
+            print(predictions)
             prediction = max(set(predictions), key=predictions.count)
         else:
             prediction = self.postprocess_prediction(decoded_texts[0])
