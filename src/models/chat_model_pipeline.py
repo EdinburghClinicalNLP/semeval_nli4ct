@@ -51,6 +51,8 @@ class ChatModelPipeline:
     def _tokenize_input_late_fusion(self, inputs):
         model_inputs = []
         for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
+            print("icl_input: ", icl_input)
+            print("icl_label: ", icl_label)
             prompt = []
             if self.system_prompt:
                 prompt += [{"role": "system", "content": self.system_prompt}]
@@ -69,6 +71,7 @@ class ChatModelPipeline:
 
             model_inputs += [model_input]
 
+        print(len(model_inputs))
         return model_inputs
 
     def setup_finetuning(self, peft_configs: dict):
@@ -125,16 +128,14 @@ class ChatModelPipeline:
         else:
             model_inputs = self._tokenize_input(inputs)
 
-        # Limit generation length
-        max_new_tokens = []
-        for model_input in model_inputs:
-            if self.max_seq_len - model_input.size(1) > 4:
-                max_new_tokens += [min(8, self.max_seq_len - model_input.size(1))]
-            else:
-                max_new_tokens += [8]
-
         decoded_texts = []
         for model_input in model_inputs:
+            # Limit generation length
+            max_new_tokens = 8
+            if self.max_seq_len - model_input.size(1) > 4:
+                max_new_tokens = min(8, self.max_seq_len - model_input.size(1))
+
+            # Predict
             with torch.inference_mode():
                 model_input = model_input.to(self.model.device)
                 output = self.model.generate(
