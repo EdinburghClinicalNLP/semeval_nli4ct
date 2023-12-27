@@ -51,8 +51,6 @@ class ChatModelPipeline:
     def _tokenize_input_late_fusion(self, inputs):
         model_inputs = []
         for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
-            print("icl_input: ", icl_input)
-            print("icl_label: ", icl_label)
             prompt = []
             if self.system_prompt:
                 prompt += [{"role": "system", "content": self.system_prompt}]
@@ -71,7 +69,6 @@ class ChatModelPipeline:
 
             model_inputs += [model_input]
 
-        print(len(model_inputs))
         return model_inputs
 
     def setup_finetuning(self, peft_configs: dict):
@@ -152,7 +149,6 @@ class ChatModelPipeline:
                 decoded_text = self.tokenizer.decode(
                     output[0, model_input.size(1) :], skip_special_tokens=True
                 )
-                print(decoded_text)
                 decoded_texts += [decoded_text]
 
         # Postprocess predictions
@@ -161,7 +157,6 @@ class ChatModelPipeline:
                 self.postprocess_prediction(decoded_text)
                 for decoded_text in decoded_texts
             ]
-            print(predictions)
             prediction = max(set(predictions), key=predictions.count)
         else:
             prediction = self.postprocess_prediction(decoded_texts[0])
