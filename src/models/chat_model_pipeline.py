@@ -137,14 +137,9 @@ class ChatModelPipeline:
                 model_input = model_input.to(self.model.device)
                 output = self.model.generate(
                     input_ids=model_input,
-                    temperature=self.model_configs.configs.temperature,
-                    top_p=self.model_configs.configs.top_p,
-                    top_k=self.model_configs.configs.top_k,
-                    repetition_penalty=self.model_configs.configs.repetition_penalty,
                     max_new_tokens=max_new_tokens,
                     do_sample=False,
                     pad_token_id=self.tokenizer.eos_token_id,
-                    num_return_sequences=1,
                 )
                 decoded_text = self.tokenizer.decode(
                     output[0, model_input.size(1) :], skip_special_tokens=True
