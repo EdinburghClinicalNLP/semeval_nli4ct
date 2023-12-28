@@ -1,5 +1,3 @@
-import random
-import re
 from itertools import combinations, product
 from typing import List, Optional, Tuple
 
@@ -82,14 +80,15 @@ class ChatModelPipeline:
         # Separate ICL examples by label
         icl_label_to_inputs = {}
         for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
-            if icl_label in icl_label_to_inputs:
-                icl_label_to_inputs[icl_label] += [icl_input]
+            if icl_label[0] in icl_label_to_inputs:
+                icl_label_to_inputs[icl_label[0]] += [icl_input[0]]
             else:
-                icl_label_to_inputs[icl_label] = [icl_input]
+                icl_label_to_inputs[icl_label[0]] = [icl_input[0]]
 
-        labels = ["Entailment", "Contradiction"]
         paired_icl_examples = set(
-            pairs(*[icl_label_to_inputs[label] for label in labels])
+            pairs(
+                icl_label_to_inputs["Entailment"], icl_label_to_inputs["Contradiction"]
+            )
         )
 
         model_inputs = []
@@ -100,9 +99,9 @@ class ChatModelPipeline:
 
             if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
                 prompt += [
-                    {"role": "user", "content": entailment_example[0]},
+                    {"role": "user", "content": entailment_example},
                     {"role": "assistant", "content": "Entailment"},
-                    {"role": "user", "content": contradiction_example[0]},
+                    {"role": "user", "content": contradiction_example},
                     {"role": "assistant", "content": "Contradiction"},
                 ]
 
