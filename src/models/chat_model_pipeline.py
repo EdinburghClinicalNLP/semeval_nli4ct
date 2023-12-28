@@ -87,7 +87,7 @@ class ChatModelPipeline:
             else:
                 icl_label_to_inputs[icl_label] = [icl_input]
 
-        labels = ["entailment", "contradiction"]
+        labels = ["Entailment", "Contradiction"]
         paired_icl_examples = set(
             pairs(*[icl_label_to_inputs[label] for label in labels])
         )
@@ -101,9 +101,9 @@ class ChatModelPipeline:
             if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
                 prompt += [
                     {"role": "user", "content": entailment_example[0]},
-                    {"role": "assistant", "content": "entailment"},
+                    {"role": "assistant", "content": "Entailment"},
                     {"role": "user", "content": contradiction_example[0]},
-                    {"role": "assistant", "content": "contradiction"},
+                    {"role": "assistant", "content": "Contradiction"},
                 ]
 
             prompt += [{"role": "user", "content": inputs["text"][0]}]

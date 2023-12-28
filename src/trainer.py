@@ -220,19 +220,19 @@ class Trainer:
                     label.lower() if label is not None else None
                     for label in batch["labels"]
                 ]
-            try:
-                prediction = self.pipeline.generate(
-                    batch, fusion_strategy=self.configs.trainer.configs.fusion_strategy
-                )
-            except Exception as exc:
-                print(f"Failed to predict: {batch}")
-                print(f"Exception: {exc}")
-                prediction = {
-                    "input_length": None,
-                    "max_new_tokens": None,
-                    "decoded_text": None,
-                    "prediction": None,
-                }
+            # try:
+            prediction = self.pipeline.generate(
+                batch, fusion_strategy=self.configs.trainer.configs.fusion_strategy
+            )
+            # except Exception as exc:
+            #     print(f"Failed to predict: {batch}")
+            #     print(f"Exception: {exc}")
+            #     prediction = {
+            #         "input_length": None,
+            #         "max_new_tokens": None,
+            #         "decoded_text": None,
+            #         "prediction": None,
+            #     }
 
             batch_df = pd.DataFrame(
                 {
