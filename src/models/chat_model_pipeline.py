@@ -1,4 +1,6 @@
+import random
 import re
+from itertools import combinations, product
 from typing import List, Optional, Tuple
 
 import torch
@@ -71,6 +73,49 @@ class ChatModelPipeline:
 
         return model_inputs
 
+    def _tokenize_input_late_coupled_fusion(self, inputs):
+        def pairs(*lists):
+            for t in combinations(lists, 2):
+                for pair in product(*t):
+                    yield pair
+
+        # Separate ICL examples by label
+        icl_label_to_inputs = {}
+        for icl_input, icl_label in zip(inputs["icl_inputs"], inputs["icl_labels"]):
+            if icl_label in icl_label_to_inputs:
+                icl_label_to_inputs[icl_label] += [icl_input]
+            else:
+                icl_label_to_inputs[icl_label] = [icl_input]
+
+        labels = ["entailment", "contradiction"]
+        paired_icl_examples = set(
+            pairs(*[icl_label_to_inputs[label] for label in labels])
+        )
+
+        model_inputs = []
+        for entailment_example, contradiction_example in paired_icl_examples:
+            prompt = []
+            if self.system_prompt:
+                prompt += [{"role": "system", "content": self.system_prompt}]
+
+            if len(inputs["icl_inputs"]) and len(inputs["icl_labels"]):
+                prompt += [
+                    {"role": "user", "content": entailment_example[0]},
+                    {"role": "assistant", "content": "entailment"},
+                    {"role": "user", "content": contradiction_example[0]},
+                    {"role": "assistant", "content": "contradiction"},
+                ]
+
+            prompt += [{"role": "user", "content": inputs["text"][0]}]
+
+            model_input = self.tokenizer.apply_chat_template(
+                prompt, return_tensors="pt", max_length=self.max_seq_len
+            )
+
+            model_inputs += [model_input]
+
+        return model_inputs
+
     def setup_finetuning(self, peft_configs: dict):
         self.peft_config = LoraConfig(
             **peft_configs,
@@ -122,6 +167,8 @@ class ChatModelPipeline:
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
         if fusion_strategy == "late":
             model_inputs = self._tokenize_input_late_fusion(inputs)
+        elif fusion_strategy == "late_coupled":
+            model_inputs = self._tokenize_input_late_coupled_fusion(inputs)
         else:
             model_inputs = self._tokenize_input(inputs)
 
@@ -147,7 +194,7 @@ class ChatModelPipeline:
                 decoded_texts += [decoded_text]
 
         # Postprocess predictions
-        if fusion_strategy == "late":
+        if fusion_strategy.startswith("late"):
             predictions = [
                 self.postprocess_prediction(decoded_text)
                 for decoded_text in decoded_texts
