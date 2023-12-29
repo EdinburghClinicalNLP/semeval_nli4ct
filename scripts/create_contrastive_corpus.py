@@ -88,6 +88,30 @@ def replace_entities_with_synonyms(text, nlp):
     return replaced_texts
 
 
+def generate_paraphrases(statement, paraphrase_type):
+    pass
+
+
+def get_synonymised_statements(
+    modified_statements, new_label, original_row, original_id, new_id_suffix
+):
+    modified_statements_df = []
+    for modified_statement in modified_statements:
+        modified_statements_df += [
+            {
+                "id": original_id + new_id_suffix,
+                "Type": original_row["Type"],
+                "Section_id": original_row["Section_id"],
+                "Primary_id": original_row["Primary_id"],
+                "Secondary_id": original_row["Secondary_id"],
+                "Statement": modified_statement,
+                "Label": new_label,
+            }
+        ]
+
+    return modified_statements_df
+
+
 def main():
     # Parse command line arguments
     args = argument_parser()
@@ -112,20 +136,48 @@ def main():
     # Load train data
     df = pd.read_json(args.data_path)
     df = df.transpose()
-    # Extract statements
-    statement_ids = df.index.tolist()
-    statements = df.Statement.tolist()
 
     # Replace entities with synonyms
-    modified_statements_dict = dict()
-    for statement_id, statement in tqdm(
-        zip(statement_ids, statements), total=len(statement_ids)
-    ):
-        modified_statements: List[str] = replace_entities_with_synonyms(statement, nlp)
-        modified_statements_dict[statement_id] = {
-            "original": statement,
-            "modified": modified_statements,
-        }
+    modified_df = pd.DataFrame(columns=list(df.columns))
+    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+        statement_id = index
+        statement = row["Statement"]
+        label = row["Label"]
+
+        # Generate paraphrases
+        affirmative_statements = generate_paraphrases(
+            statement, paraphrase_type="affirmative"
+        )
+        full_negated_statements = generate_paraphrases(
+            statement, paraphrase_type="full_negation"
+        )
+        partial_negated_statements = generate_paraphrases(
+            statement, paraphrase_type="partial_negation"
+        )
+
+        negated_label = "Contradiction" if label == "Entailment" else "Entailment"
+
+        # Replace entities with synonyms for each paraphrase
+        for paraphrase in affirmative_statements:
+            modified_statements = replace_entities_with_synonyms(paraphrase, nlp)
+            modified_statements_df = get_synonymised_statements(
+                modified_statements, label, row, statement_id, "_pos"
+            )
+            modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
+
+        for paraphrase in full_negated_statements:
+            modified_statements = replace_entities_with_synonyms(paraphrase, nlp)
+            modified_statements_df = get_synonymised_statements(
+                modified_statements, negated_label, row, statement_id, "_neg"
+            )
+            modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
+
+        for paraphrase in partial_negated_statements:
+            modified_statements = replace_entities_with_synonyms(paraphrase, nlp)
+            modified_statements_df = get_synonymised_statements(
+                modified_statements, negated_label, row, statement_id, "_parneg"
+            )
+            modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
 
     # Save the dictionary to a JSON file
     data_paths = args.data_path.split("/")
