@@ -12,6 +12,7 @@ def argument_parser():
     parser = argparse.ArgumentParser(description="SemEval NLI4CT experiments")
     parser.add_argument("--run_configs_filepath", type=str, required=True)
     parser.add_argument("--user_email", type=str, required=True)
+    parser.add_argument("--git_branch", type=str, default="main")
     args = parser.parse_args()
     return args
 
@@ -20,7 +21,7 @@ def main():
     args = argument_parser()
     configs = yaml.safe_load(open(args.run_configs_filepath, "r"))
 
-    base_args = "pip install rank_bm25 nltk && python -m nltk.downloader punkt && python -m nltk.downloader stopwords && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git && cd semeval_nli4ct && git clone https://huggingface.co/datasets/aryopg/nli4ct_practice data && "
+    base_args = f"pip install rank_bm25 nltk && python -m nltk.downloader punkt && python -m nltk.downloader stopwords && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git --branch {args.git_branch} && cd semeval_nli4ct && git clone https://huggingface.co/datasets/aryopg/nli4ct_practice data && "
     base_command = "python scripts/train.py experiment="
 
     secret_env_vars = configs["env_vars"]
