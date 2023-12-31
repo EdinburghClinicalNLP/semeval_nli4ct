@@ -214,21 +214,31 @@ def main():
 
         # Replace entities with synonyms for the original statement
         modified_statements = replace_entities_with_synonyms(statement, nlp)
+        if len(modified_statements):
+            modified_statements = [statement]
         modified_statements_df = get_synonymised_statements(
             modified_statements, label, row, statement_id, ""
         )
         modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
 
         # Replace entities with synonyms for each paraphrase
-        for statement in affirmative_statements:
-            modified_statements = replace_entities_with_synonyms(statement, nlp)
+        for affirmative_statement in affirmative_statements:
+            modified_statements = replace_entities_with_synonyms(
+                affirmative_statement, nlp
+            )
+            if len(modified_statements):
+                modified_statements = [affirmative_statement]
             modified_statements_df = get_synonymised_statements(
                 modified_statements, label, row, statement_id, "_pos"
             )
             modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
 
-        for statement in full_negated_statements:
-            modified_statements = replace_entities_with_synonyms(statement, nlp)
+        for full_negated_statement in full_negated_statements:
+            modified_statements = replace_entities_with_synonyms(
+                full_negated_statement, nlp
+            )
+            if len(modified_statements):
+                modified_statements = [full_negated_statement]
             modified_statements_df = get_synonymised_statements(
                 modified_statements, negated_label, row, statement_id, "_neg"
             )
