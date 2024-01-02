@@ -5,5 +5,6 @@ name: icl_2_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
-  query_corpus_filename: data/train_2023.json
+  query_corpus_filename: data/train.json
   num_in_context_examples: 2
+  fusion_strategy: early
