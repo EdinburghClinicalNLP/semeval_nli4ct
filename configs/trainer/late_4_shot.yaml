@@ -1,10 +1,10 @@
 defaults:
   - base_trainer_config
 
-name: icl_4_shot
+name: icl_late_fusion_4_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
   query_corpus_filename: data/train.json
   num_in_context_examples: 4
-  fusion_strategy: early
+  fusion_strategy: late
