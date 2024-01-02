@@ -318,6 +318,7 @@ conda activate clinical_peft
 
 Run experiments:
 
+You can check the list of experiments you can run in `configs/experiment` folder. For instance:
 ```bash
-python scripts/train.py experiment=llama2_7b_zeroshot
+python scripts/train.py experiment=fine_tune/llama2_7b_chat
 ```
