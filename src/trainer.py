@@ -87,7 +87,7 @@ class Trainer:
 
     @staticmethod
     def compute_metrics(labels, predictions):
-        f1 = f1_score(labels, predictions)
+        f1 = f1_score(labels, predictions, average="macro")
         acc = accuracy_score(labels, predictions)
         prec = precision_score(labels, predictions)
         recall = recall_score(labels, predictions)
