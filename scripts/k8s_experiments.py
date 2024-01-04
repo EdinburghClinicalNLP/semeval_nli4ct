@@ -21,7 +21,7 @@ def main():
     args = argument_parser()
     configs = yaml.safe_load(open(args.run_configs_filepath, "r"))
 
-    base_args = f"pip install rank_bm25 nltk && python -m nltk.downloader punkt && python -m nltk.downloader stopwords && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git --branch {args.git_branch} && cd semeval_nli4ct && git clone https://huggingface.co/datasets/aryopg/nli4ct_practice data && "
+    base_args = f"git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git --branch {args.git_branch} && cd semeval_nli4ct && huggingface-cli download aryopg/nli4ct_practice --repo-type dataset --local-dir data --token $HF_DOWNLOAD_TOKEN && "
     base_command = "python scripts/train.py experiment="
 
     secret_env_vars = configs["env_vars"]

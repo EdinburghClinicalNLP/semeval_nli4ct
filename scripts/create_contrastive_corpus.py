@@ -1,10 +1,18 @@
 import argparse
 import json
 import os
+import sys
+
+sys.path.append(os.getcwd())
+
+from dotenv import load_dotenv
+
+load_dotenv(".env")
 from typing import List
 
 import pandas as pd
 import spacy
+from openai import AzureOpenAI
 from scispacy.abbreviation import AbbreviationDetector
 from scispacy.linking import EntityLinker
 from tqdm import tqdm
@@ -88,6 +96,70 @@ def replace_entities_with_synonyms(text, nlp):
     return replaced_texts
 
 
+def generate_paraphrases(openai_client, statement, paraphrase_type):
+    prompts = [
+        {
+            "role": "system",
+            "content": "You are a helpful clinician's assistant designed to paraphrase clinical statements and to output a YAML list",
+        },
+    ]
+
+    if paraphrase_type == "affirmative":
+        prompts += [
+            {
+                "role": "user",
+                "content": f"Create 5 paraphrased statements of: '{statement}'",
+            },
+        ]
+    elif paraphrase_type == "full_negation":
+        prompts += [
+            {
+                "role": "user",
+                "content": f"Create 5 full negation statements of: '{statement}'",
+            },
+        ]
+
+    response = openai_client.chat.completions.create(
+        model="chatgpt_icd_coding",
+        messages=prompts,
+        temperature=0,
+        top_p=0,
+        max_tokens=1000,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+
+    paraphrased_statements = response.choices[0].message.content
+
+    # Split the string into a list of sentences
+    paraphrased_statements = paraphrased_statements.split("\n")
+
+    # Remove the leading '- ' from each sentence
+    paraphrased_statements = [statement[2:] for statement in paraphrased_statements]
+
+    return paraphrased_statements
+
+
+def get_synonymised_statements(
+    modified_statements, new_label, original_row, original_id, new_id_suffix
+):
+    modified_statements_df = []
+    for idx, modified_statement in enumerate(modified_statements):
+        modified_statements_df += [
+            {
+                "id": original_id + new_id_suffix + idx,
+                "Type": original_row["Type"],
+                "Section_id": original_row["Section_id"],
+                "Primary_id": original_row["Primary_id"],
+                "Secondary_id": original_row["Secondary_id"],
+                "Statement": modified_statement,
+                "Label": new_label,
+            }
+        ]
+
+    return modified_statements_df
+
+
 def main():
     # Parse command line arguments
     args = argument_parser()
@@ -108,31 +180,75 @@ def main():
     }
     nlp.add_pipe("scispacy_linker", config=linker_configs)
 
+    # OpenAI client
+    openai_client = AzureOpenAI(
+        api_key=os.getenv("AZURE_OPENAI_KEY"),
+        api_version="2023-12-01-preview",
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    )
+
     # Read text from the specified file
     # Load train data
     df = pd.read_json(args.data_path)
     df = df.transpose()
-    # Extract statements
-    statement_ids = df.index.tolist()
-    statements = df.Statement.tolist()
 
     # Replace entities with synonyms
-    modified_statements_dict = dict()
-    for statement_id, statement in tqdm(
-        zip(statement_ids, statements), total=len(statement_ids)
-    ):
-        modified_statements: List[str] = replace_entities_with_synonyms(statement, nlp)
-        modified_statements_dict[statement_id] = {
-            "original": statement,
-            "modified": modified_statements,
-        }
+    modified_df = pd.DataFrame(columns=list(df.columns))
+    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+        statement_id = index
+        statement = row["Statement"]
+        label = row["Label"]
 
-    # Save the dictionary to a JSON file
+        # Generate paraphrases
+        affirmative_statements = generate_paraphrases(
+            openai_client, statement, paraphrase_type="affirmative"
+        )
+        full_negated_statements = generate_paraphrases(
+            openai_client, statement, paraphrase_type="full_negation"
+        )
+
+        negated_label = "Contradiction" if label == "Entailment" else "Entailment"
+
+        # Insert the original in the dataframe
+        modified_df = pd.concat([modified_df, pd.DataFrame(row).transpose()])
+
+        # Replace entities with synonyms for the original statement
+        modified_statements = replace_entities_with_synonyms(statement, nlp)
+        if len(modified_statements):
+            modified_statements = [statement]
+        modified_statements_df = get_synonymised_statements(
+            modified_statements, label, row, statement_id, ""
+        )
+        modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
+
+        # Replace entities with synonyms for each paraphrase
+        for affirmative_statement in affirmative_statements:
+            modified_statements = replace_entities_with_synonyms(
+                affirmative_statement, nlp
+            )
+            if len(modified_statements):
+                modified_statements = [affirmative_statement]
+            modified_statements_df = get_synonymised_statements(
+                modified_statements, label, row, statement_id, "_pos"
+            )
+            modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
+
+        for full_negated_statement in full_negated_statements:
+            modified_statements = replace_entities_with_synonyms(
+                full_negated_statement, nlp
+            )
+            if len(modified_statements):
+                modified_statements = [full_negated_statement]
+            modified_statements_df = get_synonymised_statements(
+                modified_statements, negated_label, row, statement_id, "_neg"
+            )
+            modified_df = pd.concat([modified_df, pd.DataFrame(modified_statements_df)])
+
+    # Save to csv file
     data_paths = args.data_path.split("/")
     data_dir = "/".join(data_paths[:-1])
     data_name = data_paths[-1].replace(".json", "")
-    with open(os.path.join(data_dir, f"{data_name}_synonyms.json"), "w") as json_file:
-        json.dump(modified_statements_dict, json_file)
+    modified_df.to_csv(os.path.join(data_dir, f"{data_name}_paraphrased.csv"))
 
 
 if __name__ == "__main__":

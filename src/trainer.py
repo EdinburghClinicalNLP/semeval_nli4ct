@@ -212,6 +212,12 @@ class Trainer:
         )
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
+            # Skip if the statement id contains _pos or _neg
+            # (e.g. _pos0, _pos1, _neg0, _neg1)
+            # These are perturbed examples
+            if "_pos" in batch["id"][0] or "_neg" in batch["id"][0]:
+                continue
+
             # Test split doesn't have labels
             if split == "test":
                 postprocessed_label = [None] * len(batch["labels"])
