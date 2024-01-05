@@ -232,6 +232,9 @@ class ChatDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         icl_examples = []
         icl_labels = []
+        if "cot_" in self.trainer_configs.name:
+            cot_prompt = self.trainer_configs.configs.cot_prompt
+
         if self.trainer_configs.name.startswith("icl_"):
             for icl_evidence, icl_statement, icl_label in zip(
                 self.data["icl_evidence"][idx],
@@ -242,6 +245,7 @@ class ChatDataset(torch.utils.data.Dataset):
                     icl_example="",
                     evidence=icl_evidence,
                     statement=icl_statement,
+                    cot_prompt=cot_prompt,
                 )
                 icl_examples += [example]
                 icl_labels += [icl_label]
@@ -256,6 +260,7 @@ class ChatDataset(torch.utils.data.Dataset):
                 icl_example="",
                 evidence=self.data["evidence"][idx],
                 statement=self.data["statement"][idx],
+                cot_prompt=cot_prompt,
             ),
             "labels": self.data["labels"][idx],
         }
