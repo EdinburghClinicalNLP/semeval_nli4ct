@@ -7,4 +7,4 @@ configs:
   k1: 1.5
   b: 0.75
   epsilon: 0.25
-  top_k: 5
+  top_k: 10
