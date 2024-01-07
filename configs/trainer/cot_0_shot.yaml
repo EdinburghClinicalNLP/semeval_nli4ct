@@ -5,4 +5,5 @@ name: cot_0_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
+  fusion_strategy: ""
   cot_prompt: "Let's think step by step"
