@@ -176,7 +176,7 @@ class ChatModelPipeline:
             # Limit generation length
             max_new_tokens = 100
             if self.max_seq_len - model_input.size(1) > 4:
-                max_new_tokens = min(100, self.max_seq_len - model_input.size(1))
+                max_new_tokens = self.max_seq_len - model_input.size(1)
 
             # Predict
             with torch.inference_mode():

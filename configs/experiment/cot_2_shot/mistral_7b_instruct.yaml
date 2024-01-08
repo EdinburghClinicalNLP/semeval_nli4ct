@@ -4,3 +4,4 @@ defaults:
   - override /data: nli4ct_practice
   - override /dataloader: chat
   - override /trainer: cot_2_shot
+  - override /instruction: instruction_0_cot
