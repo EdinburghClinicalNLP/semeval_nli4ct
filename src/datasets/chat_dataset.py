@@ -237,6 +237,8 @@ class ChatDataset(torch.utils.data.Dataset):
         icl_labels = []
         if "cot_" in self.trainer_configs.name:
             cot_prompt = self.trainer_configs.configs.cot_prompt
+        else:
+            cot_prompt = ""
 
         if self.trainer_configs.name.startswith("icl_"):
             for icl_evidence, icl_statement, icl_label in zip(
