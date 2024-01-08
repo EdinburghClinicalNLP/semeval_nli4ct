@@ -201,7 +201,10 @@ class ChatDataset(torch.utils.data.Dataset):
                         )
                     ]
                     icl_statements += [icl_example["Statement"]]
-                    icl_labels += [icl_example["Label"]]
+                    if self.trainer_configs.name.startswith("icl_cot_"):
+                        icl_labels += [icl_example["CoT_label"]]
+                    else:
+                        icl_labels += [icl_example["Label"]]
                 icl_evidence_texts += [icl_evidences]
                 icl_statement_texts += [icl_statements]
                 icl_label_texts += [icl_labels]
