@@ -1,0 +1,4 @@
+defaults:
+  - base_instruction_config
+
+instruction_template: "{icl_example}Evidence: {evidence}\nStatement: {statement}\nQuestion: Is the statement a contradiction or an entailment?\n{cot_prompt}\nAnswer: "
