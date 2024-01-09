@@ -1,3 +1,4 @@
+import json
 import math
 import os
 
@@ -303,5 +304,18 @@ class Trainer:
                 metrics
                 | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
             )
+
+        # Create a submission file
+        if split == "test":
+            submission = {}
+            for idx, row in predictions_df.iterrows():
+                submission[row["id"]] = {"Prediction": row["predictions"].capitalize()}
+            with open(os.path.join(self.output_dir, "results.json"), "w") as f:
+                json.dump(submission, f)
+
+            # Upload to wandb
+            artifact = wandb.Artifact("results", type="submission")
+            artifact.add_file(os.path.join(self.output_dir, "results.json"))
+            self.wandb_tracker.log_artifact(artifact)
 
         return metrics
