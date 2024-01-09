@@ -18,11 +18,43 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 runs:
-  - experiment: cot_1_shot/llama2_7b_chat
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_1_shot/llama2_13b_chat
+  - experiment: cot_1_shot/mistral_7b_instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot_1_shot/mistral_7b_instruct
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_1_shot/meditron_7b
-    gpu_product: NVIDIA-A100-SXM4-40GB
+  # - experiment: cot_1_shot/mistral_7b_instruct retriever=bm25_length_penalty
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistral_7b_instruct retriever=bm25_contriever_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistral_7b_instruct retriever=bm25_biolinkbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistral_7b_instruct retriever=bm25_pubmedbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  - experiment: cot_1_shot/llama2_7b_chat retriever=bm25
+    gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_7b_chat retriever=bm25_length_penalty
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_7b_chat retriever=bm25_contriever_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_7b_chat retriever=bm25_biolinkbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_7b_chat retriever=bm25_pubmedbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  - experiment: cot_1_shot/llama2_13b_chat retriever=bm25
+    gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_13b_chat retriever=bm25_length_penalty
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_13b_chat retriever=bm25_contriever_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_13b_chat retriever=bm25_biolinkbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/llama2_13b_chat retriever=bm25_pubmedbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  - experiment: cot_1_shot/mistrallite_7b retriever=bm25
+    gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistrallite_7b retriever=bm25_length_penalty
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistrallite_7b retriever=bm25_contriever_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistrallite_7b retriever=bm25_biolinkbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: cot_1_shot/mistrallite_7b retriever=bm25_pubmedbert_reranker
+  #   gpu_product: NVIDIA-A100-SXM4-80GB

@@ -26,3 +26,5 @@ runs:
     gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: cot_0_shot/meditron_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: cot_0_shot/mistrallite_7b
+    gpu_product: NVIDIA-A100-SXM4-80GB
