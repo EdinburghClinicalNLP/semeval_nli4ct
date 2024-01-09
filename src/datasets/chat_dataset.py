@@ -113,14 +113,14 @@ class ChatDataset(torch.utils.data.Dataset):
         evidence = ""
         with open(file_name, "r") as f:
             data = json.load(f)
-            evidence += "primary trial: "
+            evidence += "\nPrimary trial:\n"
             if primary_evidence_ids:
                 primary_evidences = []
                 for primary_evidence_id in primary_evidence_ids:
                     primary_evidences += [data[claim_section][primary_evidence_id]]
-                evidence += " ".join(primary_evidences)
+                evidence += "\n".join(primary_evidences)
             else:
-                evidence += " ".join(data[claim_section])
+                evidence += "\n".join(data[claim_section])
 
         # If it is a comparative claim, also add evidence sentences from the 2nd trial.
         if claim_type == "Comparison":
@@ -130,17 +130,16 @@ class ChatDataset(torch.utils.data.Dataset):
             # "| secondary trial: sent_1. sent_2. (...) sent_n."
             with open(file_name, "r") as f:
                 data = json.load(f)
-                evidence += " | secondary trial: "
-                evidence += " ".join(data[claim_section])
+                evidence += "\n\nSecondary trial:\n"
                 if secondary_evidence_ids:
                     secondary_evidences = []
                     for secondary_evidence_id in secondary_evidence_ids:
                         secondary_evidences += [
                             data[claim_section][secondary_evidence_id]
                         ]
-                    evidence += " ".join(secondary_evidences)
+                    evidence += "\n".join(secondary_evidences)
                 else:
-                    evidence += " ".join(data[claim_section])
+                    evidence += "\n".join(data[claim_section])
 
         return evidence
 
