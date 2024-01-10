@@ -2,6 +2,7 @@ import json
 import os
 from typing import List, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 from transformers import PreTrainedTokenizer
@@ -167,7 +168,7 @@ class ChatDataset(torch.utils.data.Dataset):
 
         # If label is not in dataframe, assign a list of NaNs
         if "Label" not in df.columns:
-            labels = [None] * len(df)
+            labels = [np.nan] * len(df)
         else:
             labels = df.Label.tolist()
 
