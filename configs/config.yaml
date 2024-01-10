@@ -1,6 +1,6 @@
 defaults:
   - base_config
-  - data: nli4ct_practice
+  - data: nli4ct
   - dataloader: baseline
   - model: llama2_7b
   - optimizer: adamw
