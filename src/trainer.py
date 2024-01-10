@@ -2,11 +2,13 @@ import json
 import math
 import os
 
+import huggingface_hub
 import hydra
 import pandas as pd
 import torch
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
+from huggingface_hub import HfApi
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -190,10 +192,38 @@ class Trainer:
             _ = self.test("valid", log_metrics=True)
             _ = self.test("test", log_metrics=True)
 
-            print("Create a WandB artifact from embedding")
-            artifact = wandb.Artifact(self.wandb_run_name, type="model")
-            artifact.add_dir(os.path.join(self.output_dir, "best_checkpoint"))
-            wandb.log_artifact(artifact)
+            print("Upload pretrained weights to HF")
+            if self.accelerator.is_main_process:
+                unwrapped_model = self.accelerator.unwrap_model(self.pipeline.model)
+                unwrapped_model.save_pretrained(
+                    os.path.join(self.output_dir, "pretrained_weights"),
+                    is_main_process=self.accelerator.is_main_process,
+                    save_function=self.accelerator.save,
+                )
+
+                hf_username = os.getenv("HF_USERNAME")
+                hf_upload_token = os.getenv("HF_UPLOAD_TOKEN")
+
+                hf_repo_name = f"{hf_username}/{self.wandb_run_name}"
+
+                huggingface_hub.create_repo(
+                    hf_repo_name, private=True, token=hf_upload_token, repo_type="model"
+                )
+                # model.push_to_hub(
+                #     hf_repo_name,
+                #     state_dict=accelerator.get_state_dict(model),
+                #     private=True,
+                #     use_auth_token=hf_upload_token,
+                # )
+                api = HfApi(token=hf_upload_token)
+                api.upload_folder(
+                    folder_path=os.path.join(self.output_dir, "pretrained_weights"),
+                    repo_id=hf_repo_name,
+                    repo_type="model",
+                    multi_commits=True,
+                    multi_commits_verbose=True,
+                )
+            self.accelerator.wait_for_everyone()
 
     def test(self, split: str, log_metrics: bool = True):
         print(f"Test on {split}")
