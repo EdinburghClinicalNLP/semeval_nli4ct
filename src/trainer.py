@@ -314,8 +314,9 @@ class Trainer:
                 json.dump(submission, f)
 
             # Upload to wandb
-            artifact = wandb.Artifact("results", type="submission")
-            artifact.add_file(os.path.join(self.output_dir, "results.json"))
-            self.wandb_tracker.log_artifact(artifact)
+            with self.accelerator.on_main_process:
+                artifact = wandb.Artifact("results", type="submission")
+                artifact.add_file(os.path.join(self.output_dir, "results.json"))
+                wandb.log_artifact(artifact)
 
         return metrics
