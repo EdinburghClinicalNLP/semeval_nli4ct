@@ -165,7 +165,11 @@ class ChatDataset(torch.utils.data.Dataset):
         # Extract claims and labels.
         claims = df.Statement.tolist()
 
-        labels = df.Label.tolist()
+        # If label is not in dataframe, assign a list of NaNs
+        if "Label" not in df.columns:
+            labels = [None] * len(df)
+        else:
+            labels = df.Label.tolist()
 
         # (Prepare to) Extract all evidence sentences from clinical trials
         icl_evidence_texts = list()
