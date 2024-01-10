@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
   - override /model: mistral_7b_instruct
-  - override /data: nli4ct_practice
+  - override /data: nli4ct
   - override /dataloader: chat
   - override /trainer: late_4_shot
