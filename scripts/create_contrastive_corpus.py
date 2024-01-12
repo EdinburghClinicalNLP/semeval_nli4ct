@@ -203,9 +203,15 @@ def main():
         affirmative_statements = generate_paraphrases(
             openai_client, statement, paraphrase_type="affirmative"
         )
-        full_negated_statements = generate_paraphrases(
-            openai_client, statement, paraphrase_type="full_negation"
-        )
+
+        # Only generated negated statements for entailment
+        # as we cannot be certain that the negated contradiction equals to entailment
+        if label == "Entailment":
+            full_negated_statements = generate_paraphrases(
+                openai_client, statement, paraphrase_type="full_negation"
+            )
+        else:
+            full_negated_statements = []
 
         negated_label = "Contradiction" if label == "Entailment" else "Entailment"
 
