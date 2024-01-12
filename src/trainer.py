@@ -209,12 +209,6 @@ class Trainer:
                 huggingface_hub.create_repo(
                     hf_repo_name, private=True, token=hf_upload_token, repo_type="model"
                 )
-                # model.push_to_hub(
-                #     hf_repo_name,
-                #     state_dict=accelerator.get_state_dict(model),
-                #     private=True,
-                #     use_auth_token=hf_upload_token,
-                # )
                 api = HfApi(token=hf_upload_token)
                 api.upload_folder(
                     folder_path=os.path.join(self.output_dir, "pretrained_weights"),
