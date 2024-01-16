@@ -3,4 +3,4 @@ defaults:
   - override /model: mistral_7b_instruct
   - override /data: nli4ct_contrastive
   - override /dataloader: chat
-  - override /trainer: fine_tune
+  - override /trainer: fine_tune_contrastive
