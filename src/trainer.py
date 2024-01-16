@@ -133,7 +133,7 @@ class Trainer:
         )
 
     def train(self):
-        if self.configs.trainer.name == "fine_tune":
+        if self.configs.trainer.name.startswith("fine_tune"):
             self._setup_training()
 
             prev_best_valid_metric = 0
