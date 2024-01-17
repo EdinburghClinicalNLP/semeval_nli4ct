@@ -227,6 +227,11 @@ class Trainer:
             if "_pert" in batch["id"][0]:
                 continue
 
+            if "cot_" in self.configs.trainer.name:
+                use_cot = True
+            else:
+                use_cot = False
+
             # Test split doesn't have labels
             if split == "test":
                 postprocessed_label = [None] * len(batch["labels"])
@@ -237,7 +242,9 @@ class Trainer:
                 ]
             try:
                 prediction = self.pipeline.generate(
-                    batch, fusion_strategy=self.configs.trainer.configs.fusion_strategy
+                    batch,
+                    fusion_strategy=self.configs.trainer.configs.fusion_strategy,
+                    use_cot=use_cot,
                 )
             except Exception as exc:
                 print(f"Failed to predict: {batch}")

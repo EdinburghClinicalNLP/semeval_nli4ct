@@ -163,6 +163,7 @@ class ChatModelPipeline:
         self,
         inputs,
         fusion_strategy,
+        use_cot=False,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
         if fusion_strategy == "late":
             model_inputs = self._tokenize_input_late_fusion(inputs)
@@ -174,9 +175,13 @@ class ChatModelPipeline:
         decoded_texts = []
         for model_input in model_inputs:
             # Limit generation length
-            max_new_tokens = 100
-            if self.max_seq_len - model_input.size(1) > 4:
-                max_new_tokens = self.max_seq_len - model_input.size(1)
+            if use_cot:
+                # CoT needs longer generation length
+                max_new_tokens = 100
+                if self.max_seq_len - model_input.size(1) > 4:
+                    max_new_tokens = self.max_seq_len - model_input.size(1)
+            else:
+                max_new_tokens = 8
 
             # Predict
             with torch.inference_mode():
