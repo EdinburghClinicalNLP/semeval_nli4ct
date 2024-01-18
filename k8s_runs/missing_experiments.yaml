@@ -18,71 +18,71 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 runs:
-  - experiment: 0-shot/llama2-70b-chat
+  - experiment: 0_shot/llama2-70b-chat
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-0-shot/mistrallite-7b
+  - experiment: cot_0_shot/mistrallite-7b
     gpu_product: NVIDIA-A100-SXM4-80GB
   - experiment: fine-tune/meditron-7b
     gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: fine-tune/mistral-7b-instruct
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: 1-shot/llama2-7b-chat retriever=bm25
+  - experiment: 1_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: 2-shot/llama2-13b-chat retriever=bm25
+  - experiment: 2_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: 2-shot/llama2-7b-chat retriever=bm25
+  - experiment: 2_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: 2-shot/mistral-7b-instruct retriever=bm25
+  - experiment: 2_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-1-shot/mistrallite-7b retriever=bm25
+  - experiment: cot_1_shot/mistrallite-7b retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-2-shot/llama2-13b-chat retriever=bm25
+  - experiment: cot_2_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-2-shot/llama2-13b-chat retriever=bm25
+  - experiment: cot_late_2_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-2-shot/mistral-7b-instruct retriever=bm25
+  - experiment: cot_late_2_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-4-shot/llama2-13b-chat retriever=bm25
+  - experiment: cot_late_4_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-4-shot/llama2-7b-chat retriever=bm25
+  - experiment: cot_late_4_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-4-shot/mistral-7b-instruct retriever=bm25
+  - experiment: cot_late_4_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-4-shot/mistrallite-7b retriever=bm25
+  - experiment: cot_late_4_shot/mistrallite-7b retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-6-shot/llama2-13b-chat retriever=bm25
+  - experiment: cot_late_6_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-6-shot/llama2-7b-chat retriever=bm25
+  - experiment: cot_late_6_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-6-shot/mistral-7b-instruct retriever=bm25
+  - experiment: cot_late_6_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-6-shot/mistrallite-7b retriever=bm25
+  - experiment: cot_late_6_shot/mistrallite-7b retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-8-shot/llama2-13b-chat retriever=bm25
+  - experiment: cot_late_8_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: cot-late-8-shot/llama2-7b-chat retriever=bm25
+  - experiment: cot_late_8_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-4-shot/llama2-13b-chat retriever=bm25
+  - experiment: late_4_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-6-shot/llama2-13b-chat retriever=bm25
+  - experiment: late_6_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-6-shot/llama2-7b-chat retriever=bm25
+  - experiment: late_6_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-6-shot/mistral-7b-instruct retriever=bm25
+  - experiment: late_6_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-6-shot/mistrallite-7b retriever=bm25
+  - experiment: late_6_shot/mistrallite-7b retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-8-shot/llama2-13b-chat retriever=bm25
+  - experiment: late_8_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-8-shot/llama2-7b-chat retriever=bm25
+  - experiment: late_8_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-coupled-4-shot/mistral-7b-instruct retriever=bm25
+  - experiment: late_coupled-4_shot/mistral-7b-instruct retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-coupled-6-shot/llama2-13b-chat retriever=bm25
+  - experiment: late_coupled-6_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-coupled-8-shot/llama2-13b-chat retriever=bm25
+  - experiment: late_coupled-8_shot/llama2-13b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-coupled-8-shot/llama2-7b-chat retriever=bm25
+  - experiment: late_coupled-8_shot/llama2-7b-chat retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: late-coupled-8-shot/mistrallite-7b retriever=bm25
+  - experiment: late_coupled-8_shot/mistrallite-7b retriever=bm25
     gpu_product: NVIDIA-A100-SXM4-80GB
