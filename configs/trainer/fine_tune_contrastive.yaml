@@ -9,6 +9,7 @@ configs:
   max_train_seq_len: 2048  # The maximum seq length to use for training in 1x80GB GPU
   fusion_strategy: ""
   explicit_evidence: False
+  multi_adapter: False
   lora_configs:
     r: 16
     lora_alpha: 32

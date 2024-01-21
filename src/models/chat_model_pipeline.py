@@ -10,7 +10,9 @@ from src.configs import ModelConfigs
 
 
 class ChatModelPipeline:
-    def __init__(self, model_configs: ModelConfigs):
+    def __init__(self, model_configs: ModelConfigs, multi_adapter: bool = False):
+        self.multi_adapter = multi_adapter
+
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
             model_configs.configs.model_name_or_path,
@@ -116,14 +118,27 @@ class ChatModelPipeline:
         return model_inputs
 
     def setup_finetuning(self, peft_configs: dict):
-        self.peft_config = LoraConfig(
-            **peft_configs,
-            task_type=TaskType.CAUSAL_LM,
-        )
-        self.model = get_peft_model(self.model, self.peft_config)
-        self.model.print_trainable_parameters()
+        if self.multi_adapter:
+            sections = ["intervention", "eligibility", "results", "adverse_events"]
 
-    def train(self, inputs, labels, max_train_seq_len=None):
+            lora_config = LoraConfig(
+                **peft_configs,
+                task_type=TaskType.CAUSAL_LM,
+            )
+            self.model = get_peft_model(
+                self.model, lora_config, adapter_name=sections[0]
+            )
+            for section in sections:
+                self.model.add_adapter(section, config=lora_config)
+        else:
+            lora_config = LoraConfig(
+                **peft_configs,
+                task_type=TaskType.CAUSAL_LM,
+            )
+            self.model = get_peft_model(self.model, lora_config)
+            self.model.print_trainable_parameters()
+
+    def train(self, inputs, labels, max_train_seq_len: int = None):
         if max_train_seq_len is None:
             max_train_seq_len = self.max_seq_len // 2
 
@@ -153,6 +168,11 @@ class ChatModelPipeline:
         labels = labels.to(self.model.device)
 
         # Forward pass
+        ## If self.multi_adapter is true, we need to specify which adapter to use
+        if self.multi_adapter:
+            section_name = inputs["section"][0].lower().replace(" ", "_")
+            self.model.set_adapter(section_name)
+
         outputs = self.model(
             input_ids=model_input, attention_mask=attention_mask, labels=labels
         )
@@ -186,6 +206,11 @@ class ChatModelPipeline:
             # Predict
             with torch.inference_mode():
                 model_input = model_input.to(self.model.device)
+
+                if self.multi_adapter:
+                    section_name = inputs["section"][0].lower().replace(" ", "_")
+                    self.model.set_adapter(section_name)
+
                 output = self.model.generate(
                     input_ids=model_input,
                     max_new_tokens=max_new_tokens,
