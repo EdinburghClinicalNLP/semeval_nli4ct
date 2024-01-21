@@ -8,3 +8,4 @@ configs:
   query_corpus_filename: data/train.json
   num_in_context_examples: 4
   fusion_strategy: late
+  explicit_evidence: False

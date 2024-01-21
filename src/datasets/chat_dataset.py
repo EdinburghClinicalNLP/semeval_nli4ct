@@ -56,6 +56,73 @@ class ChatDataset(torch.utils.data.Dataset):
 
         self.instruction_template = self.instruction_configs.instruction_template
 
+    @staticmethod
+    def get_explicit_evidence_text(
+        evidences: List[str], evidence_section: str, trial: str
+    ):
+        """
+        Args:
+            evidences (List[str]): list of evidence sentences
+            trial (str): either "primary" or "secondary"
+        """
+
+        def is_subsection_title(sentence):
+            if len(sentence) >= 30:
+                return False
+            else:
+                if evidence_section == "Intervention":
+                    if (
+                        "intervention 1" in sentence.lower()
+                        or "intervention 2" in sentence.lower()
+                    ):
+                        return True
+                elif evidence_section == "Eligibility":
+                    if (
+                        "inclusion" in sentence.lower()
+                        or "exclusion" in sentence.lower()
+                    ) and not sentence.strip().lower().startswith("note"):
+                        return True
+                elif evidence_section == "Results":
+                    if (
+                        "outcome measurement" in sentence.lower()
+                        or "results 1" in sentence.lower()
+                        or "results 2" in sentence.lower()
+                    ):
+                        return True
+                elif evidence_section == "Adverse Events":
+                    if (
+                        "adverse events 1" in sentence.lower()
+                        or "adverse events 2" in sentence.lower()
+                    ):
+                        return True
+            return False
+
+        evidence_prefix = f"{trial.capitalize()} trial:"
+
+        explicit_evidences_text = ""
+        # Check if the evidence text is a subsection title
+        # If it is, add the evidence prefix
+        for evidence in evidences:
+            if is_subsection_title(evidence):
+                # If the evidence is a subsection title, add the word "cohort" before the number
+                if evidence_section in ["Intervention", "Results", "Adverse Events"]:
+                    explicit_evidence = evidence.replace("1:", "cohort 1:")
+                    explicit_evidence = explicit_evidence.replace("2:", "cohort 2:")
+                    explicit_evidence = explicit_evidence.strip()
+                else:
+                    explicit_evidence = evidence
+                explicit_evidences_text += f"\n{evidence_prefix} {explicit_evidence}"
+            else:
+                # If the evidence is not a subsection title, but from adverse events section,
+                # specify that the percentage refers to patients
+                if evidence_section == "Adverse Events":
+                    explicit_evidence = evidence.replace("%)", "% of patients)")
+                else:
+                    explicit_evidence = evidence
+                explicit_evidences_text += f"\n{explicit_evidence}"
+
+        return explicit_evidences_text
+
     def generate_icl_examples(self, statement_id: str):
         # Get the ICL examples depending on the number of ICL examples allowed
         all_icl_examples = self.icl_examples[statement_id]
@@ -114,14 +181,21 @@ class ChatDataset(torch.utils.data.Dataset):
         evidence = ""
         with open(file_name, "r") as f:
             data = json.load(f)
-            evidence += "\nPrimary trial:\n"
-            if primary_evidence_ids:
-                primary_evidences = []
-                for primary_evidence_id in primary_evidence_ids:
-                    primary_evidences += [data[claim_section][primary_evidence_id]]
-                evidence += "\n".join(primary_evidences)
+            if self.trainer_configs.configs.explicit_evidence:
+                evidence += self.get_explicit_evidence_text(
+                    evidences=data[claim_section],
+                    evidence_section=claim_section,
+                    trial="primary",
+                )
             else:
-                evidence += "\n".join(data[claim_section])
+                evidence += "\nPrimary trial:\n"
+                if primary_evidence_ids:
+                    primary_evidences = []
+                    for primary_evidence_id in primary_evidence_ids:
+                        primary_evidences += [data[claim_section][primary_evidence_id]]
+                    evidence += "\n".join(primary_evidences)
+                else:
+                    evidence += "\n".join(data[claim_section])
 
         # If it is a comparative claim, also add evidence sentences from the 2nd trial.
         if claim_type == "Comparison":
@@ -131,16 +205,23 @@ class ChatDataset(torch.utils.data.Dataset):
             # "| secondary trial: sent_1. sent_2. (...) sent_n."
             with open(file_name, "r") as f:
                 data = json.load(f)
-                evidence += "\n\nSecondary trial:\n"
-                if secondary_evidence_ids:
-                    secondary_evidences = []
-                    for secondary_evidence_id in secondary_evidence_ids:
-                        secondary_evidences += [
-                            data[claim_section][secondary_evidence_id]
-                        ]
-                    evidence += "\n".join(secondary_evidences)
+                if self.trainer_configs.configs.explicit_evidence:
+                    evidence += self.get_explicit_evidence_text(
+                        evidences=data[claim_section],
+                        evidence_section=claim_section,
+                        trial="secondary",
+                    )
                 else:
-                    evidence += "\n".join(data[claim_section])
+                    evidence += "\n\nSecondary trial:\n"
+                    if secondary_evidence_ids:
+                        secondary_evidences = []
+                        for secondary_evidence_id in secondary_evidence_ids:
+                            secondary_evidences += [
+                                data[claim_section][secondary_evidence_id]
+                            ]
+                        evidence += "\n".join(secondary_evidences)
+                    else:
+                        evidence += "\n".join(data[claim_section])
 
         return evidence
 

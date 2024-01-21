@@ -1,9 +1,10 @@
 defaults:
   - base_trainer_config
 
-name: 0_shot
+name: cot_0_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
   fusion_strategy: ""
-  explicit_evidence: False
+  cot_prompt: "Let's think step by step"
+  explicit_evidence: True

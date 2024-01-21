@@ -9,3 +9,4 @@ configs:
   num_in_context_examples: 1
   fusion_strategy: early
   cot_prompt: "Let's think step by step"
+  explicit_evidence: False

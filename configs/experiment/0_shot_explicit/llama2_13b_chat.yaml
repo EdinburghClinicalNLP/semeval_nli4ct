@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /model: mistral_7b
+  - override /model: llama2_13b_chat
   - override /data: nli4ct
   - override /dataloader: chat
-  - override /trainer: 0_shot
+  - override /trainer: 0_shot_explicit

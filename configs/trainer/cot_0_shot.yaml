@@ -7,3 +7,4 @@ configs:
   gradient_accumulation_steps: 0
   fusion_strategy: ""
   cot_prompt: "Let's think step by step"
+  explicit_evidence: False

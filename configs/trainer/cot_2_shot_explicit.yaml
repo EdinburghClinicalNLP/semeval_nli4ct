@@ -1,11 +1,12 @@
 defaults:
   - base_trainer_config
 
-name: icl_2_shot
+name: icl_cot_2_shot
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
-  query_corpus_filename: data/train.json
+  query_corpus_filename: data/train_cot.json
   num_in_context_examples: 2
   fusion_strategy: early
-  explicit_evidence: False
+  cot_prompt: "Let's think step by step"
+  explicit_evidence: True
