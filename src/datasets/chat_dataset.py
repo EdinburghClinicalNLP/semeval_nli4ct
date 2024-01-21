@@ -2,6 +2,7 @@ import json
 import os
 from typing import List, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 from transformers import PreTrainedTokenizer
@@ -113,14 +114,14 @@ class ChatDataset(torch.utils.data.Dataset):
         evidence = ""
         with open(file_name, "r") as f:
             data = json.load(f)
-            evidence += "primary trial: "
+            evidence += "\nPrimary trial:\n"
             if primary_evidence_ids:
                 primary_evidences = []
                 for primary_evidence_id in primary_evidence_ids:
                     primary_evidences += [data[claim_section][primary_evidence_id]]
-                evidence += " ".join(primary_evidences)
+                evidence += "\n".join(primary_evidences)
             else:
-                evidence += " ".join(data[claim_section])
+                evidence += "\n".join(data[claim_section])
 
         # If it is a comparative claim, also add evidence sentences from the 2nd trial.
         if claim_type == "Comparison":
@@ -130,17 +131,16 @@ class ChatDataset(torch.utils.data.Dataset):
             # "| secondary trial: sent_1. sent_2. (...) sent_n."
             with open(file_name, "r") as f:
                 data = json.load(f)
-                evidence += " | secondary trial: "
-                evidence += " ".join(data[claim_section])
+                evidence += "\n\nSecondary trial:\n"
                 if secondary_evidence_ids:
                     secondary_evidences = []
                     for secondary_evidence_id in secondary_evidence_ids:
                         secondary_evidences += [
                             data[claim_section][secondary_evidence_id]
                         ]
-                    evidence += " ".join(secondary_evidences)
+                    evidence += "\n".join(secondary_evidences)
                 else:
-                    evidence += " ".join(data[claim_section])
+                    evidence += "\n".join(data[claim_section])
 
         return evidence
 
@@ -166,7 +166,11 @@ class ChatDataset(torch.utils.data.Dataset):
         # Extract claims and labels.
         claims = df.Statement.tolist()
 
-        labels = df.Label.tolist()
+        # If label is not in dataframe, assign a list of NaNs
+        if "Label" not in df.columns:
+            labels = [np.nan] * len(df)
+        else:
+            labels = df.Label.tolist()
 
         # (Prepare to) Extract all evidence sentences from clinical trials
         icl_evidence_texts = list()
@@ -201,7 +205,10 @@ class ChatDataset(torch.utils.data.Dataset):
                         )
                     ]
                     icl_statements += [icl_example["Statement"]]
-                    icl_labels += [icl_example["Label"]]
+                    if self.trainer_configs.name.startswith("icl_cot_"):
+                        icl_labels += [icl_example["CoT_label"]]
+                    else:
+                        icl_labels += [icl_example["Label"]]
                 icl_evidence_texts += [icl_evidences]
                 icl_statement_texts += [icl_statements]
                 icl_label_texts += [icl_labels]
@@ -232,6 +239,11 @@ class ChatDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         icl_examples = []
         icl_labels = []
+        if "cot_" in self.trainer_configs.name:
+            cot_prompt = self.trainer_configs.configs.cot_prompt
+        else:
+            cot_prompt = ""
+
         if self.trainer_configs.name.startswith("icl_"):
             for icl_evidence, icl_statement, icl_label in zip(
                 self.data["icl_evidence"][idx],
@@ -242,6 +254,7 @@ class ChatDataset(torch.utils.data.Dataset):
                     icl_example="",
                     evidence=icl_evidence,
                     statement=icl_statement,
+                    cot_prompt=cot_prompt,
                 )
                 icl_examples += [example]
                 icl_labels += [icl_label]
@@ -256,6 +269,7 @@ class ChatDataset(torch.utils.data.Dataset):
                 icl_example="",
                 evidence=self.data["evidence"][idx],
                 statement=self.data["statement"][idx],
+                cot_prompt=cot_prompt,
             ),
             "labels": self.data["labels"][idx],
         }

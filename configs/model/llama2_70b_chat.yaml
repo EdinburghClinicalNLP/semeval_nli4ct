@@ -1,0 +1,13 @@
+defaults:
+  - base_model_config
+
+name: LLaMA2-70b-chat
+pipeline: ChatModelPipeline
+configs:
+  model_name_or_path: meta-llama/Llama-2-70b-chat-hf
+  max_seq_len: 4096
+  system_prompt: You are a clinician who check if there is a contradiction or an entailment between a section of a clinical trial report and a statement.
+  temperature: 0.001
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1

@@ -2,6 +2,7 @@ import json
 import os
 from typing import List, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 
@@ -44,7 +45,10 @@ class RetrieverDataset(torch.utils.data.Dataset):
         # Extract claims and labels.
         claims = df.Statement.tolist()
 
-        labels = df.Label.tolist()
+        if "Label" not in df.columns:
+            labels = [np.nan] * len(df)
+        else:
+            labels = df.Label.tolist()
 
         # (Prepare to) Extract all evidence sentences from clinical trials
         evidence_texts = list()

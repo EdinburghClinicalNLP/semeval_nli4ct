@@ -1,0 +1,9 @@
+defaults:
+  - base_data_config
+
+data_dir: data
+train_data_filename: train.json
+valid_data_filename: dev.json
+test_data_filename: test.json
+claims_dir: CT json
+max_length: 4096

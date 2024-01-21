@@ -1,11 +1,14 @@
+import json
 import math
 import os
 
+import huggingface_hub
 import hydra
 import pandas as pd
 import torch
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
+from huggingface_hub import HfApi
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -130,7 +133,7 @@ class Trainer:
         )
 
     def train(self):
-        if self.configs.trainer.name == "fine_tune":
+        if self.configs.trainer.name.startswith("fine_tune"):
             self._setup_training()
 
             prev_best_valid_metric = 0
@@ -189,10 +192,16 @@ class Trainer:
             _ = self.test("valid", log_metrics=True)
             _ = self.test("test", log_metrics=True)
 
-            print("Create a WandB artifact from embedding")
-            artifact = wandb.Artifact(self.wandb_run_name, type="model")
-            artifact.add_dir(os.path.join(self.output_dir, "best_checkpoint"))
-            wandb.log_artifact(artifact)
+            print("Upload pretrained weights to HF")
+            if self.accelerator.is_main_process:
+                hf_username = os.getenv("HF_USERNAME")
+                hf_upload_token = os.getenv("HF_UPLOAD_TOKEN")
+
+                hf_repo_name = f"{hf_username}/{self.wandb_run_name}"
+                self.pipeline.model.push_to_hub(
+                    hf_repo_name, private=True, token=hf_upload_token
+                )
+            self.accelerator.wait_for_everyone()
 
     def test(self, split: str, log_metrics: bool = True):
         print(f"Test on {split}")
@@ -212,11 +221,16 @@ class Trainer:
         )
         self.pipeline.model.eval()
         for step, batch in enumerate(tqdm(self.dataloaders[split])):
-            # Skip if the statement id contains _pos or _neg
-            # (e.g. _pos0, _pos1, _neg0, _neg1)
+            # Skip if the statement id contains _pert which indicated perturbed samples
+            # (e.g. _pert0, _pert1)
             # These are perturbed examples
-            if "_pos" in batch["id"][0] or "_neg" in batch["id"][0]:
+            if "_pert" in batch["id"][0]:
                 continue
+
+            if "cot_" in self.configs.trainer.name:
+                use_cot = True
+            else:
+                use_cot = False
 
             # Test split doesn't have labels
             if split == "test":
@@ -228,7 +242,9 @@ class Trainer:
                 ]
             try:
                 prediction = self.pipeline.generate(
-                    batch, fusion_strategy=self.configs.trainer.configs.fusion_strategy
+                    batch,
+                    fusion_strategy=self.configs.trainer.configs.fusion_strategy,
+                    use_cot=use_cot,
                 )
             except Exception as exc:
                 print(f"Failed to predict: {batch}")
@@ -303,5 +319,18 @@ class Trainer:
                 metrics
                 | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
             )
+
+        # Create a submission file
+        if split == "test":
+            submission = {}
+            for idx, row in predictions_df.iterrows():
+                submission[row["id"]] = {"Prediction": row["predictions"].capitalize()}
+            with open(os.path.join(self.output_dir, "results.json"), "w") as f:
+                json.dump(submission, f)
+
+            # Upload to wandb
+            artifact = wandb.Artifact("results", type="submission")
+            artifact.add_file(os.path.join(self.output_dir, "results.json"))
+            wandb.log_artifact(artifact)
 
         return metrics

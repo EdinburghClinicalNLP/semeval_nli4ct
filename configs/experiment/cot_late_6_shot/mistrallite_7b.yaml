@@ -1,0 +1,7 @@
+# @package _global_
+defaults:
+  - override /model: mistrallite_7b
+  - override /data: nli4ct
+  - override /dataloader: chat
+  - override /trainer: cot_late_6_shot
+  - override /instruction: instruction_0_cot

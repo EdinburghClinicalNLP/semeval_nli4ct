@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
   - override /model: meditron_7b
-  - override /data: nli4ct_practice
+  - override /data: nli4ct
   - override /dataloader: chat
   - override /trainer: 4_shot
