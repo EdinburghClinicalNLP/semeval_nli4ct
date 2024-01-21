@@ -1,7 +1,7 @@
 defaults:
   - base_trainer_config
 
-name: fine_tune
+name: fine_tune_explicit
 configs:
   epochs: 10
   gradient_accumulation_steps: 32

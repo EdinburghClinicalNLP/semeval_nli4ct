@@ -1,7 +1,7 @@
 defaults:
   - base_trainer_config
 
-name: cot_0_shot
+name: cot_0_shot_explicit
 configs:
   epochs: 0
   gradient_accumulation_steps: 0
