@@ -129,7 +129,7 @@ class ChatModelPipeline:
                 self.model, lora_config, adapter_name=sections[0]
             )
             for section in sections:
-                self.model.add_adapter(section, config=lora_config)
+                self.model.add_adapter(adapter_name=section, peft_config=lora_config)
         else:
             lora_config = LoraConfig(
                 **peft_configs,

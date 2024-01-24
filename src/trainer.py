@@ -9,6 +9,7 @@ import torch
 from accelerate import Accelerator
 from accelerate.tracking import WandBTracker
 from huggingface_hub import HfApi
+from omegaconf import OmegaConf
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -101,7 +102,9 @@ class Trainer:
 
     def _setup_training(self):
         # Setup PEFT
-        self.pipeline.setup_finetuning(self.configs.trainer.configs.lora_configs)
+        self.pipeline.setup_finetuning(
+            OmegaConf.to_container(self.configs.trainer.configs.lora_configs)
+        )
 
         # optimizer
         self.optimizer = get_optimizer(self.configs.optimizer, self.pipeline.model)
@@ -191,8 +194,9 @@ class Trainer:
             )
             self.accelerator.wait_for_everyone()
 
-            _ = self.test("valid", log_metrics=True)
             _ = self.test("test", log_metrics=True)
+            _ = self.test("valid", log_metrics=True)
+            _ = self.test("train", log_metrics=True)
 
             print("Upload pretrained weights to HF")
             if self.accelerator.is_main_process:

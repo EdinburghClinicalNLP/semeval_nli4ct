@@ -7,3 +7,4 @@ configs:
   gradient_accumulation_steps: 0
   fusion_strategy: ""
   explicit_evidence: False
+  multi_adapter: False

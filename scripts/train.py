@@ -29,9 +29,6 @@ def main(configs: TrainingConfigs) -> None:
 
     trainer = Trainer(configs)
     trainer.train()
-    trainer.test(split="train")
-    trainer.test(split="valid")
-    trainer.test(split="test")
 
 
 if __name__ == "__main__":

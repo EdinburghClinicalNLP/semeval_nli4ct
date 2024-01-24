@@ -10,3 +10,4 @@ configs:
   fusion_strategy: late
   cot_prompt: "Let's think step by step"
   explicit_evidence: False
+  multi_adapter: False

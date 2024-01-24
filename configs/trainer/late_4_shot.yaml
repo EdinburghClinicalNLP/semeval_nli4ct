@@ -9,3 +9,4 @@ configs:
   num_in_context_examples: 4
   fusion_strategy: late
   explicit_evidence: False
+  multi_adapter: False
