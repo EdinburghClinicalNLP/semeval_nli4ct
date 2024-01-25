@@ -194,10 +194,6 @@ class Trainer:
             )
             self.accelerator.wait_for_everyone()
 
-            _ = self.test("test", log_metrics=True)
-            _ = self.test("valid", log_metrics=True)
-            _ = self.test("train", log_metrics=True)
-
             print("Upload pretrained weights to HF")
             if self.accelerator.is_main_process:
                 hf_username = os.getenv("HF_USERNAME")
