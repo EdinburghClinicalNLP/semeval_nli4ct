@@ -13,6 +13,7 @@ def argument_parser():
     parser.add_argument("--run_configs_filepath", type=str, required=True)
     parser.add_argument("--user_email", type=str, required=True)
     parser.add_argument("--git_branch", type=str, default="main")
+    parser.add_argument("--namespace", type=str, default=None)
     args = parser.parse_args()
     return args
 
@@ -55,6 +56,7 @@ def main():
             args=[base_args + command["command"]],
             secret_env_vars=secret_env_vars,
             user_email=args.user_email,
+            namespace=args.namespace,
         )
 
         # Run the Job on the Kubernetes cluster
