@@ -126,6 +126,7 @@ class ChatModelPipeline:
         return model_inputs
 
     def setup_finetuning(self):
+        is_mixed_model = True if self.section_lora_config else False
         if self.common_lora_config:
             # Handle Hydra serialisation
             common_lora_config = OmegaConf.to_container(self.common_lora_config)
@@ -133,7 +134,9 @@ class ChatModelPipeline:
                 **common_lora_config,
                 task_type=TaskType.CAUSAL_LM,
             )
-            self.model = get_peft_model(self.model, lora_config, adapter_name="common")
+            self.model = get_peft_model(
+                self.model, lora_config, adapter_name="common", mixed=is_mixed_model
+            )
 
         if self.section_lora_config:
             sections = ["intervention", "eligibility", "results", "adverse_events"]
@@ -147,7 +150,10 @@ class ChatModelPipeline:
             # Check if common lora has been added
             if not self.common_lora_config:
                 self.model = get_peft_model(
-                    self.model, lora_config, adapter_name=sections[0]
+                    self.model,
+                    lora_config,
+                    adapter_name=sections[0],
+                    mixed=is_mixed_model,
                 )
             else:
                 self.model.add_adapter(
