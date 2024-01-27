@@ -46,7 +46,7 @@ def main():
         # Create a Kubernetes Job with a name, container image, and command
         print(f"Creating job for: {command['command']}")
         job = KubernetesJob(
-            name=run_name,
+            name=run_name[:63],
             image=configs["image"],
             gpu_type="nvidia.com/gpu",
             gpu_limit=configs["gpu_limit"],
