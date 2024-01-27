@@ -8,4 +8,5 @@ configs:
   fusion_strategy: ""
   cot_prompt: "Let's think step by step"
   explicit_evidence: True
-  multi_adapter: False
+  common_lora_config: null
+  section_lora_config: null

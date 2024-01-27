@@ -9,4 +9,5 @@ configs:
   num_in_context_examples: 2
   fusion_strategy: early
   explicit_evidence: True
-  multi_adapter: False
+  common_lora_config: null
+  section_lora_config: null
