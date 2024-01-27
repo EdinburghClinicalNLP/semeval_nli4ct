@@ -38,6 +38,8 @@ class ChatModelPipeline:
         self.common_lora_config = common_lora_config
         self.section_lora_config = section_lora_config
 
+        self.device = self.model.device
+
     def _tokenize_input(self, inputs):
         prompt = []
         if self.system_prompt:
@@ -190,9 +192,9 @@ class ChatModelPipeline:
         labels = labels[:, -max_train_seq_len:]
 
         # Move to device
-        model_input = model_input.to(self.model.device)
-        attention_mask = attention_mask.to(self.model.device)
-        labels = labels.to(self.model.device)
+        model_input = model_input.to(self.device)
+        attention_mask = attention_mask.to(self.device)
+        labels = labels.to(self.device)
 
         # Forward pass
         adapters_in_use = []
@@ -236,7 +238,7 @@ class ChatModelPipeline:
 
             # Predict
             with torch.inference_mode():
-                model_input = model_input.to(self.model.device)
+                model_input = model_input.to(self.device)
 
                 adapters_in_use = []
                 if self.common_lora_config:
