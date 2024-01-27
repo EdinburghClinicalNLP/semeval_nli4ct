@@ -165,6 +165,8 @@ class ChatModelPipeline:
             for section in sections[1:]:
                 self.model.add_adapter(adapter_name=section, peft_config=lora_config)
 
+            self.device = self.model.base_model.device
+
         self.model.print_trainable_parameters()
 
     def train(self, inputs, labels, max_train_seq_len: int = None):
