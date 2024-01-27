@@ -27,9 +27,7 @@ class Trainer:
         self.hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_dir = self.hydra_cfg["runtime"]["output_dir"]
 
-        self.pipeline = get_pipeline(self.configs.model)(
-            self.configs.model, self.configs.trainer.configs.multi_adapter
-        )
+        self.pipeline = get_pipeline(self.configs.model)(self.configs.model)
         self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(
@@ -102,9 +100,7 @@ class Trainer:
 
     def _setup_training(self):
         # Setup PEFT
-        self.pipeline.setup_finetuning(
-            OmegaConf.to_container(self.configs.trainer.configs.lora_configs)
-        )
+        self.pipeline.setup_finetuning()
 
         # optimizer
         self.optimizer = get_optimizer(self.configs.optimizer, self.pipeline.model)

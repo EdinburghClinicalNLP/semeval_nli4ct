@@ -2,6 +2,7 @@ from itertools import combinations, product
 from typing import List, Optional, Tuple
 
 import torch
+from omegaconf import OmegaConf
 from peft import LoraConfig, TaskType, get_peft_model
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
@@ -10,9 +11,7 @@ from src.configs import ModelConfigs
 
 
 class ChatModelPipeline:
-    def __init__(self, model_configs: ModelConfigs, multi_adapter: bool = False):
-        self.multi_adapter = multi_adapter
-
+    def __init__(self, model_configs: ModelConfigs):
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
             model_configs.configs.model_name_or_path,
@@ -29,6 +28,12 @@ class ChatModelPipeline:
             self.system_prompt = model_configs.configs.system_prompt
 
         self.max_seq_len = model_configs.configs.max_seq_len
+
+        # Setup the flags for ease during prediction
+        self.use_common_lora = True if self.model_configs.common_lora_config else False
+        self.use_section_lora = (
+            True if self.model_configs.section_lora_config else False
+        )
 
     def _tokenize_input(self, inputs):
         prompt = []
@@ -117,26 +122,43 @@ class ChatModelPipeline:
 
         return model_inputs
 
-    def setup_finetuning(self, peft_configs: dict):
-        if self.multi_adapter:
+    def setup_finetuning(self):
+        if self.model_configs.common_lora_config:
+            # Handle Hydra serialisation
+            common_lora_config = OmegaConf.to_container(
+                self.model_configs.common_lora_config
+            )
+            lora_config = LoraConfig(
+                **common_lora_config,
+                task_type=TaskType.CAUSAL_LM,
+            )
+            self.model = get_peft_model(self.model, lora_config, adapter_name="common")
+
+        if self.model_configs.section_lora_config:
             sections = ["intervention", "eligibility", "results", "adverse_events"]
 
+            # Handle Hydra serialisation
+            section_lora_config = OmegaConf.to_container(
+                self.model_configs.section_lora_config
+            )
             lora_config = LoraConfig(
-                **peft_configs,
+                **section_lora_config,
                 task_type=TaskType.CAUSAL_LM,
             )
-            self.model = get_peft_model(
-                self.model, lora_config, adapter_name=sections[0]
-            )
-            for section in sections:
+            # Check if common lora has been added
+            if not self.model_configs.common_lora_config:
+                self.model = get_peft_model(
+                    self.model, lora_config, adapter_name=sections[0]
+                )
+            else:
+                self.model.add_adapter(
+                    adapter_name=sections[0], peft_config=lora_config
+                )
+
+            for section in sections[1:]:
                 self.model.add_adapter(adapter_name=section, peft_config=lora_config)
-        else:
-            lora_config = LoraConfig(
-                **peft_configs,
-                task_type=TaskType.CAUSAL_LM,
-            )
-            self.model = get_peft_model(self.model, lora_config)
-            self.model.print_trainable_parameters()
+
+        self.model.print_trainable_parameters()
 
     def train(self, inputs, labels, max_train_seq_len: int = None):
         if max_train_seq_len is None:
@@ -168,10 +190,14 @@ class ChatModelPipeline:
         labels = labels.to(self.model.device)
 
         # Forward pass
-        ## If self.multi_adapter is true, we need to specify which adapter to use
-        if self.multi_adapter:
+        adapters_in_use = []
+        if self.use_common_lora:
+            adapters_in_use += ["common"]
+        if self.use_section_lora:
             section_name = inputs["section"][0].lower().replace(" ", "_")
-            self.model.set_adapter(section_name)
+            adapters_in_use += [section_name]
+
+        self.model.set_adapter(adapters_in_use)
 
         outputs = self.model(
             input_ids=model_input, attention_mask=attention_mask, labels=labels
@@ -207,9 +233,12 @@ class ChatModelPipeline:
             with torch.inference_mode():
                 model_input = model_input.to(self.model.device)
 
-                if self.multi_adapter:
+                adapters_in_use = []
+                if self.use_common_lora:
+                    adapters_in_use += ["common"]
+                if self.use_section_lora:
                     section_name = inputs["section"][0].lower().replace(" ", "_")
-                    self.model.set_adapter(section_name)
+                    adapters_in_use += [section_name]
 
                 output = self.model.generate(
                     input_ids=model_input,
