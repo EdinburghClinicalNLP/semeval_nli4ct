@@ -11,7 +11,12 @@ from src.configs import ModelConfigs
 
 
 class ChatModelPipeline:
-    def __init__(self, model_configs: ModelConfigs):
+    def __init__(
+        self,
+        model_configs: ModelConfigs,
+        common_lora_config: dict = None,
+        section_lora_config: dict = None,
+    ):
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
             model_configs.configs.model_name_or_path,
@@ -30,10 +35,8 @@ class ChatModelPipeline:
         self.max_seq_len = model_configs.configs.max_seq_len
 
         # Setup the flags for ease during prediction
-        self.use_common_lora = True if self.model_configs.common_lora_config else False
-        self.use_section_lora = (
-            True if self.model_configs.section_lora_config else False
-        )
+        self.common_lora_config = common_lora_config
+        self.section_lora_config = section_lora_config
 
     def _tokenize_input(self, inputs):
         prompt = []
@@ -123,30 +126,26 @@ class ChatModelPipeline:
         return model_inputs
 
     def setup_finetuning(self):
-        if self.model_configs.common_lora_config:
+        if self.common_lora_config:
             # Handle Hydra serialisation
-            common_lora_config = OmegaConf.to_container(
-                self.model_configs.common_lora_config
-            )
+            common_lora_config = OmegaConf.to_container(self.common_lora_config)
             lora_config = LoraConfig(
                 **common_lora_config,
                 task_type=TaskType.CAUSAL_LM,
             )
             self.model = get_peft_model(self.model, lora_config, adapter_name="common")
 
-        if self.model_configs.section_lora_config:
+        if self.section_lora_config:
             sections = ["intervention", "eligibility", "results", "adverse_events"]
 
             # Handle Hydra serialisation
-            section_lora_config = OmegaConf.to_container(
-                self.model_configs.section_lora_config
-            )
+            section_lora_config = OmegaConf.to_container(self.section_lora_config)
             lora_config = LoraConfig(
                 **section_lora_config,
                 task_type=TaskType.CAUSAL_LM,
             )
             # Check if common lora has been added
-            if not self.model_configs.common_lora_config:
+            if not self.common_lora_config:
                 self.model = get_peft_model(
                     self.model, lora_config, adapter_name=sections[0]
                 )
@@ -191,9 +190,9 @@ class ChatModelPipeline:
 
         # Forward pass
         adapters_in_use = []
-        if self.use_common_lora:
+        if self.common_lora_config:
             adapters_in_use += ["common"]
-        if self.use_section_lora:
+        if self.section_lora_config:
             section_name = inputs["section"][0].lower().replace(" ", "_")
             adapters_in_use += [section_name]
 
@@ -234,9 +233,9 @@ class ChatModelPipeline:
                 model_input = model_input.to(self.model.device)
 
                 adapters_in_use = []
-                if self.use_common_lora:
+                if self.common_lora_config:
                     adapters_in_use += ["common"]
-                if self.use_section_lora:
+                if self.section_lora_config:
                     section_name = inputs["section"][0].lower().replace(" ", "_")
                     adapters_in_use += [section_name]
 

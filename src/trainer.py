@@ -27,7 +27,11 @@ class Trainer:
         self.hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_dir = self.hydra_cfg["runtime"]["output_dir"]
 
-        self.pipeline = get_pipeline(self.configs.model)(self.configs.model)
+        self.pipeline = get_pipeline(self.configs.model)(
+            self.configs.model,
+            self.configs.trainer.configs.common_lora_config,
+            self.configs.trainer.configs.section_lora_config,
+        )
         self.dataloaders = self._load_dataset()
 
         self.accelerator = Accelerator(
