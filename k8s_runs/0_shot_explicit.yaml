@@ -1,4 +1,4 @@
-gpu_limit: 1
+gpu_limit: 2
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -21,7 +21,7 @@ runs:
   - experiment: 0_shot_explicit/llama2_7b_chat
     gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: 0_shot_explicit/llama2_13b_chat
-    gpu_product: NVIDIA-A100-SXM4-80GB
+    gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: 0_shot_explicit/mistral_7b_instruct
     gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: 0_shot_explicit/meditron_7b
