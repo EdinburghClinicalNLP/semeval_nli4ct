@@ -31,6 +31,7 @@ class Trainer:
             self.configs.model,
             self.configs.trainer.configs.common_lora_config,
             self.configs.trainer.configs.section_lora_config,
+            self.configs.trainer.configs.common_polytropon_config,
         )
         self.dataloaders = self._load_dataset()
 

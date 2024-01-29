@@ -24,6 +24,7 @@ class ChatModelPipeline:
             torch_dtype=torch.bfloat16,
             device_map="auto",
             low_cpu_mem_usage=True,
+            load_in_4bit=True
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_configs.configs.model_name_or_path
@@ -216,19 +217,25 @@ class ChatModelPipeline:
         attention_mask = attention_mask.to(self.device)
         labels = labels.to(self.device)
 
+        model_inputs = {
+            "input_ids": model_input,
+            "attention_mask": attention_mask,
+            "labels": labels
+        }
         # Forward pass
-        adapters_in_use = []
-        if self.common_lora_config:
-            adapters_in_use += ["common"]
-        if self.section_lora_config:
-            section_name = inputs["section"][0].lower().replace(" ", "_")
-            adapters_in_use += [section_name]
+        if self.common_polytropon_config:
+            model_inputs["task_ids"] = torch.tensor(inputs["task_ids"]).long()
+        else:
+            adapters_in_use = []
+            if self.common_lora_config:
+                adapters_in_use += ["common"]
+            if self.section_lora_config:
+                section_name = inputs["section"][0].lower().replace(" ", "_")
+                adapters_in_use += [section_name]
 
-        self.model.set_adapter(adapters_in_use)
+            self.model.set_adapter(adapters_in_use)
 
-        outputs = self.model(
-            input_ids=model_input, attention_mask=attention_mask, labels=labels
-        )
+        outputs = self.model(**model_inputs)
 
         return outputs
 
@@ -260,18 +267,27 @@ class ChatModelPipeline:
             with torch.inference_mode():
                 model_input = model_input.to(self.device)
 
-                adapters_in_use = []
-                if self.common_lora_config:
-                    adapters_in_use += ["common"]
-                if self.section_lora_config:
-                    section_name = inputs["section"][0].lower().replace(" ", "_")
-                    adapters_in_use += [section_name]
+                model_inputs = {
+                    "input_ids": model_input,
+                    "max_new_tokens": max_new_tokens,
+                    "do_sample": False,
+                    "pad_token_id": self.tokenizer.eos_token_id
+                }
+                # Forward pass
+                if self.common_polytropon_config:
+                    model_inputs["task_ids"] = torch.tensor(inputs["task_ids"]).long()
+                else:
+                    adapters_in_use = []
+                    if self.common_lora_config:
+                        adapters_in_use += ["common"]
+                    if self.section_lora_config:
+                        section_name = inputs["section"][0].lower().replace(" ", "_")
+                        adapters_in_use += [section_name]
+
+                    self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(
-                    input_ids=model_input,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=False,
-                    pad_token_id=self.tokenizer.eos_token_id,
+                    **model_inputs
                 )
                 decoded_text = self.tokenizer.decode(
                     output[0, model_input.size(1) :], skip_special_tokens=True
