@@ -206,7 +206,8 @@ class ChatModelPipeline:
             section_name = inputs["section"][0].lower().replace(" ", "_")
             adapters_in_use += [section_name]
 
-        self.model.set_adapter(adapters_in_use)
+        if adapters_in_use:
+            self.model.set_adapter(adapters_in_use)
 
         outputs = self.model(
             input_ids=model_input, attention_mask=attention_mask, labels=labels
@@ -249,7 +250,8 @@ class ChatModelPipeline:
                     section_name = inputs["section"][0].lower().replace(" ", "_")
                     adapters_in_use += [section_name]
 
-                self.model.set_adapter(adapters_in_use)
+                if adapters_in_use:
+                    self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(
                     input_ids=model_input,
