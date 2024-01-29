@@ -14,6 +14,7 @@ def argument_parser():
     parser.add_argument("--user_email", type=str, required=True)
     parser.add_argument("--git_branch", type=str, default="main")
     parser.add_argument("--namespace", type=str, default=None)
+    parser.add_argument("--train_script", type=str, default="scripts/train.py")
     args = parser.parse_args()
     return args
 
@@ -23,7 +24,7 @@ def main():
     configs = yaml.safe_load(open(args.run_configs_filepath, "r"))
 
     base_args = f"pip uninstall -y huggingface_hub && pip install huggingface_hub && git clone https://$GIT_TOKEN@github.com/EdinburghClinicalNLP/semeval_nli4ct.git --branch {args.git_branch} && cd semeval_nli4ct && huggingface-cli download aryopg/nli4ct_practice --repo-type dataset --local-dir data --token $HF_DOWNLOAD_TOKEN --quiet && "
-    base_command = "python scripts/train.py experiment="
+    base_command = f"python {args.train_script} experiment="
 
     secret_env_vars = configs["env_vars"]
     commands = {}
