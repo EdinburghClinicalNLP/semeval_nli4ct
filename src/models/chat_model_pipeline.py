@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 
 import torch
 from omegaconf import OmegaConf
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, PolyConfig, TaskType, get_peft_model
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
@@ -16,6 +16,7 @@ class ChatModelPipeline:
         model_configs: ModelConfigs,
         common_lora_config: dict = None,
         section_lora_config: dict = None,
+        common_polytropon_config: dict = None,
     ):
         self.model_configs = model_configs
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -37,6 +38,7 @@ class ChatModelPipeline:
         # Setup the flags for ease during prediction
         self.common_lora_config = common_lora_config
         self.section_lora_config = section_lora_config
+        self.common_polytropon_config = common_polytropon_config
 
         self.device = self.model.device
 
@@ -129,43 +131,59 @@ class ChatModelPipeline:
 
     def setup_finetuning(self):
         is_mixed_model = True if self.section_lora_config else False
-        if self.common_lora_config:
-            # Handle Hydra serialisation
-            common_lora_config = OmegaConf.to_container(self.common_lora_config)
-            lora_config = LoraConfig(
-                **common_lora_config,
+        if self.common_polytropon_config:
+            common_polytropon_config = OmegaConf.to_container(
+                self.common_polytropon_config
+            )
+            polytropon_config = PolyConfig(
+                **common_polytropon_config,
                 task_type=TaskType.CAUSAL_LM,
             )
             self.model = get_peft_model(
-                self.model, lora_config, adapter_name="common", mixed=is_mixed_model
+                self.model,
+                polytropon_config,
+                adapter_name="polytropon",
             )
-
-        if self.section_lora_config:
-            sections = ["intervention", "eligibility", "results", "adverse_events"]
-
-            # Handle Hydra serialisation
-            section_lora_config = OmegaConf.to_container(self.section_lora_config)
-            lora_config = LoraConfig(
-                **section_lora_config,
-                task_type=TaskType.CAUSAL_LM,
-            )
-            # Check if common lora has been added
-            if not self.common_lora_config:
+        else:
+            if self.common_lora_config:
+                # Handle Hydra serialisation
+                common_lora_config = OmegaConf.to_container(self.common_lora_config)
+                lora_config = LoraConfig(
+                    **common_lora_config,
+                    task_type=TaskType.CAUSAL_LM,
+                )
                 self.model = get_peft_model(
-                    self.model,
-                    lora_config,
-                    adapter_name=sections[0],
-                    mixed=is_mixed_model,
-                )
-            else:
-                self.model.add_adapter(
-                    adapter_name=sections[0], peft_config=lora_config
+                    self.model, lora_config, adapter_name="common", mixed=is_mixed_model
                 )
 
-            for section in sections[1:]:
-                self.model.add_adapter(adapter_name=section, peft_config=lora_config)
+            if self.section_lora_config:
+                sections = ["intervention", "eligibility", "results", "adverse_events"]
 
-            # self.device = self.model.base_model.device
+                # Handle Hydra serialisation
+                section_lora_config = OmegaConf.to_container(self.section_lora_config)
+                lora_config = LoraConfig(
+                    **section_lora_config,
+                    task_type=TaskType.CAUSAL_LM,
+                )
+                # Check if common lora has been added
+                if not self.common_lora_config:
+                    self.model = get_peft_model(
+                        self.model,
+                        lora_config,
+                        adapter_name=sections[0],
+                        mixed=is_mixed_model,
+                    )
+                else:
+                    self.model.add_adapter(
+                        adapter_name=sections[0], peft_config=lora_config
+                    )
+
+                for section in sections[1:]:
+                    self.model.add_adapter(
+                        adapter_name=section, peft_config=lora_config
+                    )
+
+                # self.device = self.model.base_model.device
 
         self.model.print_trainable_parameters()
 
