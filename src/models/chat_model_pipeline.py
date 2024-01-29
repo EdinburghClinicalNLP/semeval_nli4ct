@@ -24,7 +24,6 @@ class ChatModelPipeline:
             torch_dtype=torch.bfloat16,
             device_map="auto",
             low_cpu_mem_usage=True,
-            load_in_4bit=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_configs.configs.model_name_or_path
