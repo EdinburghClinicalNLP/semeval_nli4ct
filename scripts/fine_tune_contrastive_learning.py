@@ -11,6 +11,7 @@ load_dotenv(".env")
 import pickle
 from itertools import combinations, product
 
+from tqdm import tqdm
 import hydra
 import torch
 from omegaconf import OmegaConf
@@ -72,8 +73,9 @@ def main(configs: TrainingConfigs) -> None:
         device_map="auto",
         low_cpu_mem_usage=True,
     )
+    tokenizer = AutoTokenizer.from_pretrained(configs.model.configs.model_name_or_path)
     common_lora_config = OmegaConf.to_container(
-        configs.model.configs.common_lora_config
+        configs.trainer.configs.common_lora_config
     )
     lora_config = LoraConfig(
         **common_lora_config,
@@ -86,23 +88,29 @@ def main(configs: TrainingConfigs) -> None:
 
     for epoch in range(configs.trainer.configs.epochs):
         total_loss = 0
-        for step, train_pair in enumerate(train_pairs):
-            anchor = ""
-            statement_pos = ""
-            statement_neg = ""
-            for train_id in train_pair:
-                train_data = train_dataset_dict[train_id]
-                if train_data["label"] == "Entailment":
-                    statement_pos = train_data["statement"]
-                elif train_data["label"] == "Contradiction":
-                    statement_neg = train_data["statement"]
-                if not anchor:
-                    anchor = train_data["evidence"]
+        for step, train_pair in enumerate(tqdm(train_pairs)):
+            try:
+                anchor = ""
+                statement_pos = ""
+                statement_neg = ""
+                for train_id in train_pair:
+                    train_data = train_dataset_dict[train_id]
+                    if train_data["label"] == "Entailment":
+                        statement_pos = train_data["statement"]
+                    elif train_data["label"] == "Contradiction":
+                        statement_neg = train_data["statement"]
+                    if not anchor:
+                        anchor = train_data["evidence"]
+            except KeyError:
+                continue
 
             model.train()
 
+            anchor = tokenizer(anchor, return_tensors="pt", max_length=1024, truncation=True)["input_ids"]
+            statement_pos = tokenizer(statement_pos, return_tensors="pt", max_length=1024, truncation=True)["input_ids"]
+            statement_neg = tokenizer(statement_neg, return_tensors="pt", max_length=1024, truncation=True)["input_ids"]
+
             anchor_logits = model(anchor)
-            print(anchor_logits)
             anchor_logits = anchor_logits.last_hidden_state.mean(dim=1)
             statement_pos_logits = model(statement_pos).last_hidden_state.mean(dim=1)
             statement_neg_logits = model(statement_neg).last_hidden_state.mean(dim=1)
