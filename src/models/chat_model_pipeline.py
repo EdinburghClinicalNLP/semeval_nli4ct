@@ -249,6 +249,8 @@ class ChatModelPipeline:
                     section_name = inputs["section"][0].lower().replace(" ", "_")
                     adapters_in_use += [section_name]
 
+                self.model.set_adapter(adapters_in_use)
+
                 output = self.model.generate(
                     input_ids=model_input,
                     max_new_tokens=max_new_tokens,
