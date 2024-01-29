@@ -24,7 +24,7 @@ class ChatModelPipeline:
             torch_dtype=torch.bfloat16,
             device_map="auto",
             low_cpu_mem_usage=True,
-            load_in_4bit=True
+            load_in_4bit=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_configs.configs.model_name_or_path
@@ -220,7 +220,7 @@ class ChatModelPipeline:
         model_inputs = {
             "input_ids": model_input,
             "attention_mask": attention_mask,
-            "labels": labels
+            "labels": labels,
         }
         # Forward pass
         if self.common_polytropon_config:
@@ -246,14 +246,14 @@ class ChatModelPipeline:
         use_cot=False,
     ) -> Tuple[List[List[int]], Optional[List[List[float]]]]:
         if fusion_strategy == "late":
-            model_inputs = self._tokenize_input_late_fusion(inputs)
+            tokenized_inputs = self._tokenize_input_late_fusion(inputs)
         elif fusion_strategy == "late_coupled":
-            model_inputs = self._tokenize_input_late_coupled_fusion(inputs)
+            tokenized_inputs = self._tokenize_input_late_coupled_fusion(inputs)
         else:
-            model_inputs = self._tokenize_input(inputs)
+            tokenized_inputs = self._tokenize_input(inputs)
 
         decoded_texts = []
-        for model_input in model_inputs:
+        for model_input in tokenized_inputs:
             # Limit generation length
             if use_cot:
                 # CoT needs longer generation length
@@ -271,7 +271,7 @@ class ChatModelPipeline:
                     "input_ids": model_input,
                     "max_new_tokens": max_new_tokens,
                     "do_sample": False,
-                    "pad_token_id": self.tokenizer.eos_token_id
+                    "pad_token_id": self.tokenizer.eos_token_id,
                 }
                 # Forward pass
                 if self.common_polytropon_config:
@@ -286,9 +286,7 @@ class ChatModelPipeline:
 
                     self.model.set_adapter(adapters_in_use)
 
-                output = self.model.generate(
-                    **model_inputs
-                )
+                output = self.model.generate(**model_inputs)
                 decoded_text = self.tokenizer.decode(
                     output[0, model_input.size(1) :], skip_special_tokens=True
                 )
@@ -306,7 +304,9 @@ class ChatModelPipeline:
 
         return {
             "decoded_text": decoded_texts,
-            "input_length": [model_input.size(1) for model_input in model_inputs],
+            "input_length": [
+                tokenized_input.size(1) for tokenized_input in tokenized_inputs
+            ],
             "max_new_tokens": max_new_tokens,
             "prediction": prediction,
         }
