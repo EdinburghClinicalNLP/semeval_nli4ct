@@ -16,5 +16,5 @@ configs:
     - aryopg/MistralLite-7b_lora_contrastive
     - aryopg/MistralLite-7b_lora_common
   pretrained_adapter_weights:
+    - 0.5
     - 1
-    - 2
