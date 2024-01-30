@@ -139,6 +139,8 @@ class Trainer:
         )
 
     def train(self):
+        if self.configs.trainer.name.startswith("pretrained"):
+            self.pipeline.load_pretrained_adapters()
         if self.configs.trainer.name.startswith("fine_tune"):
             self._setup_training()
 
