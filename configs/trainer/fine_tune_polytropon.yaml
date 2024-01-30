@@ -10,7 +10,6 @@ configs:
   explicit_evidence: False
   common_lora_config: null
   section_lora_config: null
-  common_polytropon_config: null
   common_polytropon_config:
     r: 16
     n_tasks: 4
