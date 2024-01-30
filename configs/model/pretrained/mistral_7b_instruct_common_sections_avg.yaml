@@ -11,6 +11,7 @@ configs:
   top_p: 0
   top_k: 1
   repetition_penalty: 1
+  pretrained_adapter_merging: average
   pretrained_adapter_paths:
     - aryopg/Mistral-7b-Instruct_lora_common
     - aryopg/Mistral-7b-Instruct_lora_results

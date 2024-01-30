@@ -42,3 +42,19 @@ runs:
     gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: pretrained_0_shot/mistrallite_7b_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistral_7b_instruct_common_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistral_7b_instruct_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistrallite_7b_common_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistrallite_7b_sections_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB

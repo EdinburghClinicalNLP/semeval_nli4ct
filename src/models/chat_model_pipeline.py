@@ -60,13 +60,21 @@ class ChatModelPipeline:
                 )
             adapter_names += [adapter_name]
 
-        self.pretrained_adapter_name = f"averaged_{'_'.join(adapter_names)}"
-        self.model.add_weighted_adapter(
-            adapters=adapter_names,
-            weights=[1 / len(adapter_names)] * len(adapter_names),
-            adapter_name=self.pretrained_adapter_name,
-            combination_type="linear",
-        )
+        self.pretrained_adapter_name = f"{self.model_configs.configs.pretrained_adapter_merging}_{'_'.join(adapter_names)}"
+        if self.model_configs.configs.pretrained_adapter_merging == "average":
+            self.model.add_weighted_adapter(
+                adapters=adapter_names,
+                weights=[1 / len(adapter_names)] * len(adapter_names),
+                adapter_name=self.pretrained_adapter_name,
+                combination_type="linear",
+            )
+        elif self.model_configs.configs.pretrained_adapter_merging == "svd":
+            self.model.add_weighted_adapter(
+                adapters=adapter_names,
+                weights=[1 / len(adapter_names)] * len(adapter_names),
+                adapter_name=self.pretrained_adapter_name,
+                combination_type="svd",
+            )
 
     def _tokenize_input(self, inputs):
         prompt = []
