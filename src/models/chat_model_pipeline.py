@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 
 import torch
 from omegaconf import OmegaConf
-from peft import LoraConfig, PolyConfig, TaskType, get_peft_model
+from peft import LoraConfig, PeftModel, PolyConfig, TaskType, get_peft_model
 from torch.nn import functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
@@ -36,11 +36,37 @@ class ChatModelPipeline:
         self.max_seq_len = model_configs.configs.max_seq_len
 
         # Setup the flags for ease during prediction
+        self.pretrained_adapter_name = None
+
         self.common_lora_config = common_lora_config
         self.section_lora_config = section_lora_config
         self.common_polytropon_config = common_polytropon_config
 
         self.device = self.model.device
+
+    def load_pretrained_adapters(self) -> dict:
+        adapter_names = []
+        for i, pretrained_adapter_path in enumerate(
+            self.configs.model.configs.pretrained_adapter_paths
+        ):
+            adapter_name = pretrained_adapter_path.split("_")[-1]
+            if i == 0:
+                self.model = PeftModel.from_pretrained(
+                    self.model, pretrained_adapter_path, adapter_name=adapter_name
+                )
+            else:
+                self.model.load_adapter(
+                    pretrained_adapter_path, adapter_name=adapter_name
+                )
+            adapter_names += [adapter_name]
+
+        self.pretrained_adapter_name = f"averaged_{'_'.join(adapter_names)}"
+        self.model.add_weighted_adapter(
+            adapters=adapter_names,
+            weights=[1 / len(adapter_names)] * len(adapter_names),
+            adapter_name=self.pretrained_adapter_name,
+            combination_type="linear",
+        )
 
     def _tokenize_input(self, inputs):
         prompt = []
@@ -276,14 +302,19 @@ class ChatModelPipeline:
                 if self.common_polytropon_config:
                     model_inputs["task_ids"] = torch.tensor(inputs["task_ids"]).long()
                 else:
-                    adapters_in_use = []
-                    if self.common_lora_config:
-                        adapters_in_use += ["common"]
-                    if self.section_lora_config:
-                        section_name = inputs["section"][0].lower().replace(" ", "_")
-                        adapters_in_use += [section_name]
+                    if self.pretrained_adapter_name:
+                        self.model.set_adapter(self.pretrained_adapter_name)
+                    else:
+                        adapters_in_use = []
+                        if self.common_lora_config:
+                            adapters_in_use += ["common"]
+                        if self.section_lora_config:
+                            section_name = (
+                                inputs["section"][0].lower().replace(" ", "_")
+                            )
+                            adapters_in_use += [section_name]
 
-                    self.model.set_adapter(adapters_in_use)
+                        self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(**model_inputs)
                 decoded_text = self.tokenizer.decode(

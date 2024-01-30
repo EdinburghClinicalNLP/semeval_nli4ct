@@ -1,0 +1,6 @@
+# @package _global_
+defaults:
+  - override /model: mistrallite_7b_common
+  - override /data: nli4ct
+  - override /dataloader: chat
+  - override /trainer: pretrained_0_shot

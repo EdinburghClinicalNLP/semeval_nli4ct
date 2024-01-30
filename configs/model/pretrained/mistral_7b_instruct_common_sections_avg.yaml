@@ -1,0 +1,19 @@
+defaults:
+  - base_model_config
+
+name: Mistral-7b-Instruct
+pipeline: ChatModelPipeline
+configs:
+  model_name_or_path: mistralai/Mistral-7B-Instruct-v0.1
+  max_seq_len: 4096
+  system_prompt: You are a clinician who check if there is a contradiction or an entailment between a section of a clinical trial report and a statement.
+  temperature: 0.001
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1
+  pretrained_adapter_paths:
+    - aryopg/Mistral-7b-Instruct_lora_common
+    - aryopg/Mistral-7b-Instruct_lora_results
+    - aryopg/Mistral-7b-Instruct_lora_intervention
+    - aryopg/Mistral-7b-Instruct_lora_eligibility
+    - aryopg/Mistral-7b-Instruct_lora_adverse_events
