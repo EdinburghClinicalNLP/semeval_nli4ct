@@ -18,27 +18,27 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 runs:
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_common_sections_avg
+  - experiment: pretrained_0_shot/mistral_7b_instruct_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_common
+  - experiment: pretrained_0_shot/mistral_7b_instruct_common
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_contrastive_common_avg
+  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_contrastive_common_sections_avg
+  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_contrastive
+  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistral_7b_instruct_sections_avg
+  - experiment: pretrained_0_shot/mistral_7b_instruct_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_common_sections_avg
+  - experiment: pretrained_0_shot/mistrallite_7b_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_common
+  - experiment: pretrained_0_shot/mistrallite_7b_common
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_contrastive_common_avg
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_contrastive_common_sections_avg
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_contrastive
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_fine_tune_multi_adapters/mistrallite_7b_sections_avg
+  - experiment: pretrained_0_shot/mistrallite_7b_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
