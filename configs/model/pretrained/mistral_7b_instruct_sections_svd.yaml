@@ -17,3 +17,8 @@ configs:
     - aryopg/Mistral-7b-Instruct_lora_intervention
     - aryopg/Mistral-7b-Instruct_lora_eligibility
     - aryopg/Mistral-7b-Instruct_lora_adverse_events
+  pretrained_adapter_weights:
+    - 1
+    - 1
+    - 1
+    - 1

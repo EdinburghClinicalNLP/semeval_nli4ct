@@ -19,12 +19,19 @@ class ChatModelPipeline:
         common_polytropon_config: dict = None,
     ):
         self.model_configs = model_configs
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_configs.configs.model_name_or_path,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            low_cpu_mem_usage=True,
-        )
+        if self.model_configs.configs.pretrained_adapter_merging == "svd":
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_configs.configs.model_name_or_path,
+                device_map="auto",
+                low_cpu_mem_usage=True,
+            )
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_configs.configs.model_name_or_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                low_cpu_mem_usage=True,
+            )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_configs.configs.model_name_or_path
         )
@@ -64,14 +71,14 @@ class ChatModelPipeline:
         if self.model_configs.configs.pretrained_adapter_merging == "average":
             self.model.add_weighted_adapter(
                 adapters=adapter_names,
-                weights=[1 / len(adapter_names)] * len(adapter_names),
+                weights=list(self.model_configs.configs.pretrained_adapter_weights),
                 adapter_name=self.pretrained_adapter_name,
                 combination_type="linear",
             )
         elif self.model_configs.configs.pretrained_adapter_merging == "svd":
             self.model.add_weighted_adapter(
                 adapters=adapter_names,
-                weights=[1 / len(adapter_names)] * len(adapter_names),
+                weights=list(self.model_configs.configs.pretrained_adapter_weights),
                 adapter_name=self.pretrained_adapter_name,
                 combination_type="svd",
             )

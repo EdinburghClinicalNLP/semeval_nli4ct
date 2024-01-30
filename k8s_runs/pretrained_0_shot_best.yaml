@@ -1,4 +1,4 @@
-gpu_limit: 2
+gpu_limit: 1
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -18,11 +18,14 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 runs:
-  - experiment: 0_shot/mistrallite_7b
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_common_svd
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_4_shot/mistral_7b_instruct retriever=bm25
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_2_common_1_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_4_shot/llama2_13b_chat retriever=bm25
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_1_common_2_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_6_shot/llama2_13b_chat retriever=bm25
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_2_common_1_svd
     gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_1_common_2_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+  

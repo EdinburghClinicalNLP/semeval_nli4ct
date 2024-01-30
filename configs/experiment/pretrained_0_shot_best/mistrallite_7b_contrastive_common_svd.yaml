@@ -1,0 +1,6 @@
+# @package _global_
+defaults:
+  - override /model: pretrained/mistrallite_7b_contrastive_common_svd
+  - override /data: nli4ct
+  - override /dataloader: chat
+  - override /trainer: pretrained_0_shot

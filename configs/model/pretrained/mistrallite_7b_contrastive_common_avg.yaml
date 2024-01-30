@@ -15,3 +15,6 @@ configs:
   pretrained_adapter_paths:
     - aryopg/MistralLite-7b_lora_contrastive
     - aryopg/MistralLite-7b_lora_common
+  pretrained_adapter_weights:
+    - 1
+    - 1
