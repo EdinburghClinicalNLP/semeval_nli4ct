@@ -47,7 +47,7 @@ class ChatModelPipeline:
     def load_pretrained_adapters(self) -> dict:
         adapter_names = []
         for i, pretrained_adapter_path in enumerate(
-            self.model_configs.pretrained_adapter_paths
+            self.model_configs.configs.pretrained_adapter_paths
         ):
             adapter_name = pretrained_adapter_path.split("_")[-1]
             if i == 0:
