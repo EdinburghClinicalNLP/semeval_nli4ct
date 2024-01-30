@@ -259,14 +259,17 @@ class ChatModelPipeline:
         if self.common_polytropon_config:
             model_inputs["task_ids"] = torch.tensor(inputs["task_ids"]).long()
         else:
-            adapters_in_use = []
-            if self.common_lora_config:
-                adapters_in_use += ["common"]
-            if self.section_lora_config:
-                section_name = inputs["section"][0].lower().replace(" ", "_")
-                adapters_in_use += [section_name]
+            if self.pretrained_adapter_name:
+                self.model.set_adapter(self.pretrained_adapter_name)
+            else:
+                adapters_in_use = []
+                if self.common_lora_config:
+                    adapters_in_use += ["common"]
+                if self.section_lora_config:
+                    section_name = inputs["section"][0].lower().replace(" ", "_")
+                    adapters_in_use += [section_name]
 
-            self.model.set_adapter(adapters_in_use)
+                self.model.set_adapter(adapters_in_use)
 
         outputs = self.model(**model_inputs)
 

@@ -141,7 +141,7 @@ class Trainer:
     def train(self):
         if self.configs.trainer.name.startswith("pretrained"):
             self.pipeline.load_pretrained_adapters()
-        if self.configs.trainer.name.startswith("fine_tune"):
+        if "fine_tune" in self.configs.trainer.name:
             self._setup_training()
 
             prev_best_valid_metric = 0
