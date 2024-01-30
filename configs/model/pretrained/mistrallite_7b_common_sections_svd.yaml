@@ -13,8 +13,8 @@ configs:
   repetition_penalty: 1
   pretrained_adapter_merging: svd
   pretrained_adapter_paths:
-    - aryopg/Mistral-7b-Instruct_lora_common
-    - aryopg/Mistral-7b-Instruct_lora_results
-    - aryopg/Mistral-7b-Instruct_lora_intervention
-    - aryopg/Mistral-7b-Instruct_lora_eligibility
-    - aryopg/Mistral-7b-Instruct_lora_adverse_events
+    - aryopg/MistralLite-7b_lora_common
+    - aryopg/MistralLite-7b_lora_results
+    - aryopg/MistralLite-7b_lora_intervention
+    - aryopg/MistralLite-7b_lora_eligibility
+    - aryopg/MistralLite-7b_lora_adverse_events

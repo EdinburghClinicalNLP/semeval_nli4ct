@@ -13,4 +13,4 @@ configs:
   repetition_penalty: 1
   pretrained_adapter_merging: average
   pretrained_adapter_paths:
-    - aryopg/Mistral-7b-Instruct_lora_contrastive
+    - aryopg/MistralLite-7b_lora_contrastive
