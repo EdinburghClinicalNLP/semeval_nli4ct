@@ -22,6 +22,7 @@ class ChatModelPipeline:
         if self.model_configs.configs.pretrained_adapter_merging == "svd":
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_configs.configs.model_name_or_path,
+                torch_dtype=torch.bfloat16,
                 device_map="auto",
                 low_cpu_mem_usage=True,
             )
