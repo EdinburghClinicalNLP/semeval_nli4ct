@@ -259,6 +259,7 @@ class Trainer:
                     "max_new_tokens": None,
                     "decoded_text": None,
                     "prediction": None,
+                    "prediction_scores": None,
                 }
 
             batch_df = pd.DataFrame(
@@ -271,6 +272,7 @@ class Trainer:
                     "max_new_tokens": [prediction["max_new_tokens"]],
                     "labels": postprocessed_label,
                     "predictions": [prediction["prediction"]],
+                    "prediction_scores": [prediction["prediction_scores"]],
                     "original_predictions": [prediction["decoded_text"]],
                 }
             )
@@ -319,11 +321,9 @@ class Trainer:
             print(metrics)
 
         # Save DataFrame
-        if log_metrics:
-            self.accelerator.log(
-                metrics
-                | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
-            )
+        self.accelerator.log(
+            metrics | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
+        )
 
         # Create a submission file
         if split == "test":

@@ -51,6 +51,12 @@ class ChatModelPipeline:
 
         self.device = self.model.device
 
+        self._get_label_first_token_id()
+
+    def _get_label_first_token_id(self):
+        self.entailment_id = self.tokenizer.encode("Entailment")[1]
+        self.contradiction_id = self.tokenizer.encode("Contradiction")[1]
+
     def load_pretrained_adapters(self) -> dict:
         adapter_names = []
         for i, pretrained_adapter_path in enumerate(
@@ -302,6 +308,7 @@ class ChatModelPipeline:
             tokenized_inputs = self._tokenize_input(inputs)
 
         decoded_texts = []
+        scores = []
         for model_input in tokenized_inputs:
             # Limit generation length
             if use_cot:
@@ -353,11 +360,19 @@ class ChatModelPipeline:
 
                             self.model.set_adapter(adapters_in_use)
 
-                output = self.model.generate(**model_inputs)
+                output = self.model.generate(
+                    **model_inputs,
+                    output_scores=True,
+                )
                 decoded_text = self.tokenizer.decode(
-                    output[0, model_input.size(1) :], skip_special_tokens=True
+                    output.sequences[0, model_input.size(1) :], skip_special_tokens=True
                 )
                 decoded_texts += [decoded_text]
+
+                contradiction_score = output.scores[:, self.contradiction_id].squeeze()
+                entailment_score = output.scores[:, self.entailment_id].squeeze()
+
+                scores += [(contradiction_score, entailment_score)]
 
         # Postprocess predictions
         if fusion_strategy.startswith("late"):
@@ -376,6 +391,7 @@ class ChatModelPipeline:
             ],
             "max_new_tokens": max_new_tokens,
             "prediction": prediction,
+            "prediction_scores": scores,
         }
 
     @staticmethod
