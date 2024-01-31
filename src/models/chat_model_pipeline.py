@@ -348,6 +348,9 @@ class ChatModelPipeline:
                                 )
                                 adapters_in_use += [section_name]
 
+                            if len(adapters_in_use) == 1:
+                                adapters_in_use = adapters_in_use[0]
+
                             self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(**model_inputs)
