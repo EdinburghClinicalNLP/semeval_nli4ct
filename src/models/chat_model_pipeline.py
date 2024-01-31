@@ -369,6 +369,7 @@ class ChatModelPipeline:
                 )
                 decoded_texts += [decoded_text]
 
+                print(output["scores"])
                 contradiction_score = output["scores"][
                     :, self.contradiction_id
                 ].squeeze()
