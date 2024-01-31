@@ -308,7 +308,9 @@ class ChatModelPipeline:
                 # CoT needs longer generation length
                 max_new_tokens = 100
                 if self.max_seq_len - model_input.size(1) > 4:
-                    max_new_tokens = self.max_seq_len - model_input.size(1)
+                    max_new_tokens = min(
+                        max_new_tokens, self.max_seq_len - model_input.size(1)
+                    )
             else:
                 max_new_tokens = 8
 

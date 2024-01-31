@@ -1,4 +1,4 @@
-gpu_limit: 1
+gpu_limit: 2
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -18,13 +18,13 @@ env_vars:
     key: aryo-hf-username
 image: aryopg/nli4ct:latest
 runs:
-  - experiment: fine_tune/mistral_7b_instruct
-    gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: fine_tune/llama2_7b_chat
-    gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: fine_tune/llama2_13b_chat
-    gpu_product: NVIDIA-A100-SXM4-80GB
-  - experiment: fine_tune/meditron_7b
-    gpu_product: NVIDIA-A100-SXM4-80GB
+  # - experiment: fine_tune/mistral_7b_instruct
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
+  # - experiment: fine_tune/llama2_7b_chat
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
+  # - experiment: fine_tune/llama2_13b_chat
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
+  # - experiment: fine_tune/meditron_7b
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
   - experiment: fine_tune/mistrallite_7b
-    gpu_product: NVIDIA-A100-SXM4-80GB
+    gpu_product: NVIDIA-A100-SXM4-40GB
