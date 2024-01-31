@@ -11,3 +11,6 @@ configs:
   top_p: 0
   top_k: 1
   repetition_penalty: 1
+  pretrained_adapter_merging: null
+  pretrained_adapter_paths: null
+  pretrained_adapter_weights: null
