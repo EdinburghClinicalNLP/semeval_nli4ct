@@ -361,16 +361,18 @@ class ChatModelPipeline:
                             self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(
-                    **model_inputs,
-                    output_scores=True,
+                    **model_inputs, output_scores=True, return_dict_in_generate=True
                 )
                 decoded_text = self.tokenizer.decode(
-                    output.sequences[0, model_input.size(1) :], skip_special_tokens=True
+                    output["sequences"][0, model_input.size(1) :],
+                    skip_special_tokens=True,
                 )
                 decoded_texts += [decoded_text]
 
-                contradiction_score = output.scores[:, self.contradiction_id].squeeze()
-                entailment_score = output.scores[:, self.entailment_id].squeeze()
+                contradiction_score = output["scores"][
+                    :, self.contradiction_id
+                ].squeeze()
+                entailment_score = output["scores"][:, self.entailment_id].squeeze()
 
                 scores += [(contradiction_score, entailment_score)]
 
