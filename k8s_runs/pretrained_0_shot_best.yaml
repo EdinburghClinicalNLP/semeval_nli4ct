@@ -28,8 +28,10 @@ runs:
   #   gpu_product: NVIDIA-A100-SXM4-40GB
   # - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_1_common_2_svd
   #   gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_cot_0_shot_best/mistrallite_7b_contrastive_common_avg
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot_explicit_best/mistrallite_7b_contrastive_common_avg
+  # - experiment: pretrained_cot_0_shot_best/mistrallite_7b_contrastive_common_avg
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
+  # - experiment: pretrained_0_shot_explicit_best/mistrallite_7b_contrastive_common_avg
+  #   gpu_product: NVIDIA-A100-SXM4-40GB
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
   
