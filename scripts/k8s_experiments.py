@@ -51,7 +51,7 @@ def main():
             ram_request="64Gi",
             image=configs["image"],
             gpu_type="nvidia.com/gpu",
-            gpu_limit=configs["gpu_limit"],
+            gpu_limit=command["gpu_limit"],
             gpu_product=command["gpu_product"],
             backoff_limit=4,
             command=["/bin/bash", "-c", "--"],
