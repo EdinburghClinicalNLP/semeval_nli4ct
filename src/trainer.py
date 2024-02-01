@@ -272,7 +272,7 @@ class Trainer:
                     "max_new_tokens": [prediction["max_new_tokens"]],
                     "labels": postprocessed_label,
                     "predictions": [prediction["prediction"]],
-                    "prediction_scores": [prediction["prediction_scores"]],
+                    # "prediction_scores": [prediction["prediction_scores"]],
                     "original_predictions": [prediction["decoded_text"]],
                 }
             )

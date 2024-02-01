@@ -309,7 +309,7 @@ class ChatModelPipeline:
             tokenized_inputs = self._tokenize_input(inputs)
 
         decoded_texts = []
-        scores = []
+        # scores = []
         for model_input in tokenized_inputs:
             # Limit generation length
             if use_cot:
@@ -361,21 +361,28 @@ class ChatModelPipeline:
 
                             self.model.set_adapter(adapters_in_use)
 
-                output = self.model.generate(
-                    **model_inputs, output_scores=True, return_dict_in_generate=True
-                )
+                output = self.model.generate(**model_inputs)
                 decoded_text = self.tokenizer.decode(
-                    output["sequences"][0, model_input.size(1) :],
+                    output[0, model_input.size(1) :],
                     skip_special_tokens=True,
                 )
                 decoded_texts += [decoded_text]
 
-                contradiction_score = output["scores"][1][
-                    0, self.contradiction_id
-                ].squeeze()
-                entailment_score = output["scores"][1][0, self.entailment_id].squeeze()
+                # output = self.model.generate(
+                #     **model_inputs, output_scores=True, return_dict_in_generate=True
+                # )
+                # decoded_text = self.tokenizer.decode(
+                #     output["sequences"][0, model_input.size(1) :],
+                #     skip_special_tokens=True,
+                # )
+                # decoded_texts += [decoded_text]
 
-                scores += [(contradiction_score, entailment_score)]
+                # contradiction_score = output["scores"][1][
+                #     0, self.contradiction_id
+                # ].squeeze()
+                # entailment_score = output["scores"][1][0, self.entailment_id].squeeze()
+
+                # scores += [(contradiction_score, entailment_score)]
 
         # Postprocess predictions
         if fusion_strategy.startswith("late"):
@@ -394,7 +401,7 @@ class ChatModelPipeline:
             ],
             "max_new_tokens": max_new_tokens,
             "prediction": prediction,
-            "prediction_scores": scores,
+            # "prediction_scores": scores,
         }
 
     @staticmethod
