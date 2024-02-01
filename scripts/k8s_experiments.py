@@ -40,6 +40,7 @@ def main():
         commands[run_name] = {
             "command": base_command + run["experiment"],
             "gpu_product": run["gpu_product"],
+            "gpu_limit": run["gpu_limit"],
         }
 
     for run_name, command in commands.items():
