@@ -1,4 +1,3 @@
-gpu_limit: 1
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -20,41 +19,37 @@ image: aryopg/nli4ct:latest
 runs:
   - experiment: pretrained_0_shot/mistral_7b_instruct_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistral_7b_instruct_common
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistral_7b_instruct_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_common
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_contrastive
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: pretrained_0_shot/mistrallite_7b_sections_avg
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistral_7b_instruct_common_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistral_7b_instruct_contrastive_common_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistral_7b_instruct_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistrallite_7b_common_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: pretrained_0_shot/mistrallite_7b_sections_svd
-    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
