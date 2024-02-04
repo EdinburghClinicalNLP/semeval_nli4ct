@@ -31,6 +31,7 @@ class Trainer:
             self.configs.model,
             self.configs.trainer.configs.common_lora_config,
             self.configs.trainer.configs.section_lora_config,
+            self.configs.trainer.configs.common_polytropon_config,
         )
         self.dataloaders = self._load_dataset()
 
@@ -138,7 +139,9 @@ class Trainer:
         )
 
     def train(self):
-        if self.configs.trainer.name.startswith("fine_tune"):
+        if self.configs.trainer.name.startswith("pretrained"):
+            self.pipeline.load_pretrained_adapters()
+        if "fine_tune" in self.configs.trainer.name:
             self._setup_training()
 
             prev_best_valid_metric = 0
@@ -242,21 +245,22 @@ class Trainer:
                     label.lower() if label is not None else None
                     for label in batch["labels"]
                 ]
-            try:
-                prediction = self.pipeline.generate(
-                    batch,
-                    fusion_strategy=self.configs.trainer.configs.fusion_strategy,
-                    use_cot=use_cot,
-                )
-            except Exception as exc:
-                print(f"Failed to predict: {batch}")
-                print(f"Exception: {exc}")
-                prediction = {
-                    "input_length": None,
-                    "max_new_tokens": None,
-                    "decoded_text": None,
-                    "prediction": None,
-                }
+            # try:
+            prediction = self.pipeline.generate(
+                batch,
+                fusion_strategy=self.configs.trainer.configs.fusion_strategy,
+                use_cot=use_cot,
+            )
+            # except Exception as exc:
+            #     print(f"Failed to predict: {batch}")
+            #     print(f"Exception: {exc}")
+            #     prediction = {
+            #         "input_length": None,
+            #         "max_new_tokens": None,
+            #         "decoded_text": None,
+            #         "prediction": None,
+            #         "prediction_scores": None,
+            #     }
 
             batch_df = pd.DataFrame(
                 {
@@ -268,6 +272,7 @@ class Trainer:
                     "max_new_tokens": [prediction["max_new_tokens"]],
                     "labels": postprocessed_label,
                     "predictions": [prediction["prediction"]],
+                    # "prediction_scores": [prediction["prediction_scores"]],
                     "original_predictions": [prediction["decoded_text"]],
                 }
             )
@@ -316,11 +321,9 @@ class Trainer:
             print(metrics)
 
         # Save DataFrame
-        if log_metrics:
-            self.accelerator.log(
-                metrics
-                | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
-            )
+        self.accelerator.log(
+            metrics | {f"{split}_prediction_df": wandb.Table(dataframe=predictions_df)}
+        )
 
         # Create a submission file
         if split == "test":

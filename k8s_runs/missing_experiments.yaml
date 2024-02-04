@@ -1,4 +1,3 @@
-gpu_limit: 2
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -20,123 +19,13 @@ image: aryopg/nli4ct:latest
 runs:
   - experiment: 0_shot/mistrallite_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: 1_shot/llama2_7b_chat retriever=bm25
+    gpu_limit: 2
+  - experiment: 0_shot_explicit/mistrallite_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: 1_shot/mistrallite_7b retriever=bm25
+    gpu_limit: 2
+  - experiment: cot_0_shot/mistrallite_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: 2_shot/llama2_7b_chat retriever=bm25
+    gpu_limit: 2
+  - experiment: late_4_shot/mistrallite_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: 2_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: 2_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_2_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_2_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_4_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_4_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_6_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_6_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_6_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_6_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_6_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_8_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_8_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_8_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_4_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_4_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_6_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_6_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_8_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_8_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_8_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: late_coupled_8_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_1_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_1_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_2_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_2_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_2_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_2_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_2_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_4_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_4_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_4_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_4_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_4_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_6_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_6_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_6_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_6_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_6_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_8_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_8_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_8_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_4_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_4_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_4_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_4_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_4_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_6_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_6_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_6_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_6_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_6_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_8_shot/llama2_13b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_8_shot/llama2_7b_chat retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_8_shot/mistral_7b_instruct retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_8_shot/mistrallite_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
-  - experiment: cot_late_coupled_8_shot/meditron_7b retriever=bm25
-    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2

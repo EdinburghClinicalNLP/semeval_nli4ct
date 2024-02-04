@@ -1,4 +1,3 @@
-gpu_limit: 1
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -20,17 +19,16 @@ image: aryopg/nli4ct:latest
 runs:
   - experiment: 0_shot/llama2_7b_chat
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
   - experiment: 0_shot/llama2_13b_chat
-    gpu_product: NVIDIA-A100-SXM4-80GB
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: 0_shot/mistral_7b_instruct
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
   - experiment: 0_shot/meditron_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
-  # - experiment: 0_shot/llama2_7b
-  #   gpu_product: NVIDIA-A100-SXM4-40GB
-  # - experiment: 0_shot/llama2_13b
-  #   gpu_product: NVIDIA-A100-SXM4-80GB
-  # - experiment: 0_shot/mistral_7b
-  #   gpu_product: NVIDIA-A100-SXM4-40GB
-  # - experiment: 0_shot/mistrallite_7b
-  #   gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
+  - experiment: 0_shot/mistrallite_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
