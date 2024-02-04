@@ -1,0 +1,13 @@
+defaults:
+  - base_trainer_config
+
+name: pretrained_fine_tune
+configs:
+  epochs: 10
+  gradient_accumulation_steps: 32
+  max_train_seq_len: 2048  # The maximum seq length to use for training in 1x80GB GPU
+  fusion_strategy: ""
+  explicit_evidence: False
+  common_lora_config: null
+  section_lora_config: null
+  common_polytropon_config: null

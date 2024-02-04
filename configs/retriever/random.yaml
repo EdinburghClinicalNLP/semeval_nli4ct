@@ -1,0 +1,7 @@
+defaults:
+  - base_retriever_config
+
+name: Random
+icl_examples_dir: in_context_examples/random
+configs:
+  top_k: 10

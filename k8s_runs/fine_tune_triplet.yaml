@@ -1,4 +1,3 @@
-gpu_limit: 2
 accelerate_config: ""
 env_vars:
   GIT_TOKEN:
@@ -20,5 +19,7 @@ image: aryopg/nli4ct:latest
 runs:
   - experiment: fine_tune/mistral_7b_instruct
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
   - experiment: fine_tune/mistrallite_7b
     gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2

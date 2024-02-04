@@ -9,6 +9,13 @@ from transformers import PreTrainedTokenizer
 
 from src.configs import DataConfigs, InstructionConfigs, TrainerConfigs
 
+TASK2ID = {
+    "Results": 0,
+    "Intervention": 1,
+    "Eligibility": 2,
+    "Adverse Events": 3,
+}
+
 
 class ChatDataset(torch.utils.data.Dataset):
     def __init__(
@@ -352,6 +359,7 @@ class ChatDataset(torch.utils.data.Dataset):
                 statement=self.data["statement"][idx],
                 cot_prompt=cot_prompt,
             ),
+            "task_ids": TASK2ID[self.data["section"][idx]],
             "labels": self.data["labels"][idx],
         }
 

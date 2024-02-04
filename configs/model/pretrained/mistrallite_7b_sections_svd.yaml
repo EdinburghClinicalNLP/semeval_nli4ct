@@ -1,0 +1,24 @@
+defaults:
+  - base_model_config
+
+name: MistralLite-7b
+pipeline: ChatModelPipeline
+configs:
+  model_name_or_path: amazon/MistralLite
+  max_seq_len: 4096
+  system_prompt: You are a clinician who check if there is a contradiction or an entailment between a section of a clinical trial report and a statement.
+  temperature: 0.001
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1
+  pretrained_adapter_merging: svd
+  pretrained_adapter_paths:
+    - aryopg/MistralLite-7b_lora_results
+    - aryopg/MistralLite-7b_lora_intervention
+    - aryopg/MistralLite-7b_lora_eligibility
+    - aryopg/MistralLite-7b_lora_adverse_events
+  pretrained_adapter_weights:
+    - 1
+    - 1
+    - 1
+    - 1

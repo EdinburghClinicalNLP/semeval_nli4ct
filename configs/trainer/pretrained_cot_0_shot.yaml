@@ -1,0 +1,13 @@
+defaults:
+  - base_trainer_config
+
+name: pretrained_cot_0_shot
+configs:
+  epochs: 0
+  gradient_accumulation_steps: 0
+  fusion_strategy: ""
+  cot_prompt: "Let's think step by step"
+  explicit_evidence: False
+  common_lora_config: null
+  section_lora_config: null
+  common_polytropon_config: null
