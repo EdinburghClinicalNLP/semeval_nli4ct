@@ -289,7 +289,8 @@ class ChatModelPipeline:
                         section_name = inputs["section"][0].lower().replace(" ", "_")
                         adapters_in_use += [section_name]
 
-                    self.model.set_adapter(adapters_in_use)
+                    if adapters_in_use:
+                        self.model.set_adapter(adapters_in_use)
 
         outputs = self.model(**model_inputs)
 
@@ -359,7 +360,8 @@ class ChatModelPipeline:
                             if len(adapters_in_use) == 1:
                                 adapters_in_use = adapters_in_use[0]
 
-                            self.model.set_adapter(adapters_in_use)
+                            if adapters_in_use:
+                                self.model.set_adapter(adapters_in_use)
 
                 output = self.model.generate(**model_inputs)
                 decoded_text = self.tokenizer.decode(
@@ -367,22 +369,6 @@ class ChatModelPipeline:
                     skip_special_tokens=True,
                 )
                 decoded_texts += [decoded_text]
-
-                # output = self.model.generate(
-                #     **model_inputs, output_scores=True, return_dict_in_generate=True
-                # )
-                # decoded_text = self.tokenizer.decode(
-                #     output["sequences"][0, model_input.size(1) :],
-                #     skip_special_tokens=True,
-                # )
-                # decoded_texts += [decoded_text]
-
-                # contradiction_score = output["scores"][1][
-                #     0, self.contradiction_id
-                # ].squeeze()
-                # entailment_score = output["scores"][1][0, self.entailment_id].squeeze()
-
-                # scores += [(contradiction_score, entailment_score)]
 
         # Postprocess predictions
         if fusion_strategy.startswith("late"):
