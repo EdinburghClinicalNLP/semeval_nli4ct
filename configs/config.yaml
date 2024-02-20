@@ -1,0 +1,21 @@
+defaults:
+  - base_config
+  - data: nli4ct
+  - dataloader: baseline
+  - model: llama2_7b
+  - optimizer: adamw
+  - lr_scheduler: warmup_linear_decay
+  - trainer: fine_tune
+  - retriever: bm25
+  - instruction: instruction_0
+  - experiment: null
+  - _self_
+
+hydra:
+  output_subdir: null
+random_seed: 1234
+
+wandb_project: NLI4CT
+wandb_entity: aryopg
+
+debug: false

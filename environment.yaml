@@ -1,0 +1,37 @@
+name: semeval_nli4ct
+channels:
+  - pytorch
+  - nvidia
+  - huggingface
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - hydra-core
+  - huggingface_hub
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cudatoolkit=11.4
+  - datasets
+  - evaluate
+  - pip
+  - python-dotenv
+  - wandb
+  - scikit-learn
+  - accelerate
+  - isort
+  - sentencepiece
+  - matplotlib
+  - black
+  - pydantic
+  - pandas
+  - tqdm
+  - pynvml
+  - pip:
+    - deepspeed
+    - peft
+    - tokenizers==0.15.0
+    - transformers==4.35.2
+    - pydantic==1.10.12  
+    - info-nce-pytorch

@@ -1,0 +1,12 @@
+defaults:
+  - base_trainer_config
+
+name: 0_shot_explicit
+configs:
+  epochs: 0
+  gradient_accumulation_steps: 0
+  fusion_strategy: ""
+  explicit_evidence: True
+  common_lora_config: null
+  section_lora_config: null
+  common_polytropon_config: null

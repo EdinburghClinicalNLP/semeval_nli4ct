@@ -1,0 +1,17 @@
+defaults:
+  - base_trainer_config
+
+name: fine_tune_explicit_multi_adapter
+configs:
+  epochs: 10
+  gradient_accumulation_steps: 32
+  max_train_seq_len: 2048  # The maximum seq length to use for training in 1x80GB GPU
+  fusion_strategy: ""
+  explicit_evidence: True
+  common_lora_config: null
+  section_lora_config: 
+    r: 16
+    lora_alpha: 32
+    lora_dropout: 0.0
+    target_modules: ["k_proj", "q_proj", "v_proj"]
+  common_polytropon_config: null

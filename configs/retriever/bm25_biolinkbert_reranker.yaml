@@ -1,0 +1,11 @@
+defaults:
+  - base_retriever_config
+
+name: CTRBM25OkapiDenseReranker
+icl_examples_dir: in_context_examples/bm25_biolinkbert_reranker
+configs:
+  k1: 1.5
+  b: 0.75
+  epsilon: 0.25
+  top_k: 10
+  dense_retriever_name: michiyasunaga/BioLinkBERT-base

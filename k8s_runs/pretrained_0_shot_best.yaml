@@ -1,0 +1,44 @@
+accelerate_config: ""
+env_vars:
+  GIT_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-git-token
+  WANDB_API_KEY:
+    secret_name: aryo-secrets
+    key: aryo-wandb-api-key
+  HF_DOWNLOAD_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-hf-download-token
+  HF_UPLOAD_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-hf-upload-token
+  HF_USERNAME:
+    secret_name: aryo-secrets
+    key: aryo-hf-username
+image: aryopg/nli4ct:latest
+runs:
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_common_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_2_common_1_avg
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_1_common_2_avg
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_2_common_1_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot_best/mistrallite_7b_contrastive_1_common_2_svd
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_cot_0_shot_best/mistrallite_7b_contrastive_common_avg
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot_explicit_best/mistrallite_7b_contrastive_common_avg
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: pretrained_0_shot/mistrallite_7b_contrastive_common_avg
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  

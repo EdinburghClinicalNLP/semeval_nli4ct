@@ -1,0 +1,15 @@
+defaults:
+  - base_trainer_config
+
+name: icl_cot_late_fusion_4_shot
+configs:
+  epochs: 0
+  gradient_accumulation_steps: 0
+  query_corpus_filename: data/train_cot.json
+  num_in_context_examples: 4
+  fusion_strategy: late
+  cot_prompt: "Let's think step by step"
+  explicit_evidence: False
+  common_lora_config: null
+  section_lora_config: null
+  common_polytropon_config: null

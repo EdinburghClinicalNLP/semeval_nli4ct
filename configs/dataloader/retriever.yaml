@@ -1,0 +1,5 @@
+defaults:
+  - base_dataloader_config
+
+dataset_loader: RetrieverDataset
+configs: {}

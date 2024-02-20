@@ -1,0 +1,6 @@
+# @package _global_
+defaults:
+  - override /model: pretrained/mistral_7b_instruct_common_sections_svd
+  - override /data: nli4ct
+  - override /dataloader: chat
+  - override /trainer: pretrained_0_shot

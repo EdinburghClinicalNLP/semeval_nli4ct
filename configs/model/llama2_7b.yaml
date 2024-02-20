@@ -1,0 +1,15 @@
+defaults:
+  - base_model_config
+
+name: LLaMA2-7b
+pipeline: LanguageModelPipeline
+configs:
+  model_name_or_path: meta-llama/Llama-2-7b-hf
+  max_seq_len: 4096
+  temperature: 0.001
+  top_p: 0
+  top_k: 1
+  repetition_penalty: 1
+  pretrained_adapter_merging: null
+  pretrained_adapter_paths: null
+  pretrained_adapter_weights: null

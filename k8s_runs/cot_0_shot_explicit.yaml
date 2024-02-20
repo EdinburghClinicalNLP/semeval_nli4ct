@@ -1,0 +1,34 @@
+accelerate_config: ""
+env_vars:
+  GIT_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-git-token
+  WANDB_API_KEY:
+    secret_name: aryo-secrets
+    key: aryo-wandb-api-key
+  HF_DOWNLOAD_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-hf-download-token
+  HF_UPLOAD_TOKEN:
+    secret_name: aryo-secrets
+    key: aryo-hf-upload-token
+  HF_USERNAME:
+    secret_name: aryo-secrets
+    key: aryo-hf-username
+image: aryopg/nli4ct:latest
+runs:
+  - experiment: cot_0_shot_explicit/llama2_7b_chat
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
+  - experiment: cot_0_shot_explicit/llama2_13b_chat
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 2
+  - experiment: cot_0_shot_explicit/mistral_7b_instruct
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
+  - experiment: cot_0_shot_explicit/meditron_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1
+  - experiment: cot_0_shot_explicit/mistrallite_7b
+    gpu_product: NVIDIA-A100-SXM4-40GB
+    gpu_limit: 1

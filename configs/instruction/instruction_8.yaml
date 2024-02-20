@@ -1,0 +1,4 @@
+defaults:
+  - base_instruction_config
+
+instruction_template: "{icl_example}Can we draw the following hypothesis from the context? Context: {evidence} Hypothesis: {statement}\nOPTIONS:\n- Contradiction\n- Entailment\n{cot_prompt}\nAnswer: "
