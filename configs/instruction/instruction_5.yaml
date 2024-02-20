@@ -1,4 +1,0 @@
-defaults:
-  - base_instruction_config
-
-instruction_template: "{icl_example}{evidence} Can we infer the following? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\n{cot_prompt}\nAnswer: "

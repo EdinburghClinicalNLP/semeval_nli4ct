@@ -1,4 +1,0 @@
-defaults:
-  - base_instruction_config
-
-instruction_template: "{icl_example}{evidence} Does this next sentence follow, given the preceding text? {statement}\nOPTIONS:\n- Contradiction\n- Entailment\n{cot_prompt}\nAnswer: "
