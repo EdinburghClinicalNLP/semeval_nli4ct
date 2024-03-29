@@ -1,6 +1,6 @@
-# SemEval NLI4CT
+# Edinburgh Clinical NLP at SemEval-2024 Task 2: Fine-tune your model unless you have access to GPT-4
 
-Edinburgh Clinical NLP at SemEval-2024 Task 2: Fine-tune your model unless you have access to GPT-4 (In submission)
+**Paper link**: TBA
 
 ## Resources
 
