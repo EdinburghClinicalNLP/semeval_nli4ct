@@ -112,3 +112,8 @@ python scripts/fine_tune_contrastive_learning.py experiment=fine_tune/mistrallit
 
 python scripts/train.py experiment=pretrained_0_shot/mistrallite_7b_contrastive_common_avg
 ```
+
+To run the `pretrained_0_shot/mistrallite_7b_contrastive_common_avg` experiment, you can download our pretrained LoRA adapters:
+
+- [LM adapter](https://huggingface.co/aryopg/MistralLite-7b_lora_common_semeval_nli4ct_2024)
+- [Triplet adapter](https://huggingface.co/aryopg/MistralLite-7b_lora_contrastive_semeval_nli4ct_2024)
