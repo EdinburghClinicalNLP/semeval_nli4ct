@@ -1,9 +1,8 @@
 # Edinburgh Clinical NLP at SemEval-2024 Task 2: Fine-tune your model unless you have access to GPT-4
 
-**Paper link**: TBA
-
 ## Resources
 
+- [🚀 Preprint](https://arxiv.org/abs/2404.00484)
 - [Competition CodaLab Page](https://codalab.lisn.upsaclay.fr/competitions/16190?secret_key=4863f655-9dd6-43f0-b710-f17cb67af607)
 - [Dataset paper](https://arxiv.org/abs/2305.03598)
 - [Task Github Repo](https://github.com/ai-systems/Task-2-SemEval-2024/tree/main)
